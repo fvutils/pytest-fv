@@ -1,0 +1,25 @@
+
+package:
+  name: pytest-hdl
+
+  #  setup-deps:
+  #- ninja
+  #- cython
+
+  dep-sets:
+
+  - name: default
+    deps:
+    - name: pytest
+      src: pypi
+    - name: fusesoc
+      src: pypi
+
+  - name: default-dev
+    deps:
+    - name: pytest
+      src: pypi
+    - name: fusesoc
+      url: https://github.com/olofk/fusesoc.git
+
+
