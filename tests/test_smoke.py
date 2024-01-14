@@ -1,11 +1,14 @@
 import os
 import pytest
-import pytest_hdl
-from pytest_hdl import hdl_tool_sim, fusesoc
+from pytest_hdl import *
+#import pytest_hdl
+
 
 @pytest.fixture
-def setup():
-    print("setup")
+def setup(pytestconfig):
+    print("setup: root=%s ini=%s" % (
+        pytestconfig.rootdir,
+        pytestconfig.inipath))
     return "setup"
 
 @pytest.fixture

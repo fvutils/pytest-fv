@@ -21,15 +21,50 @@
 #****************************************************************************
 import pytest
 
-    
 class HdlToolSim(object):
 
     def __init__(self):
+        self._files = []
+        self._incdirs = []
+        self._defines = {}
+
+    def build(self):
+        raise NotImplementedError("HdlToolSim.build: %s" % str(self))
+
+    def run(self):
+        raise NotImplementedError("HdlToolSim.run: %s" % str(self))
+
+    pass
+    
+class HdlToolSimRgy(object):
+    _inst = None
+
+    def __init__(self):
         print("HdlToolSim")
+        self.impl = {}
         pass
+
+    def addSimImpl(self, name, cls):
+        print("addSimImpl")
+        self.impl[name] = cls
+
+    @classmethod
+    def inst(cls):
+        if cls._inst is None:
+            cls._inst = HdlToolSimRgy()
+        return cls._inst
+
+    @staticmethod
+    def create(config):
+        sim = config.getToolSim()
+        rgy = HdlToolSimRgy.inst()
+        if sim in rgy.impl.keys():
+            return rgy.impl[sim]()
+        else:
+            raise Exception("pytest-hdl: sim %s is not supported" % sim)
 
 
 @pytest.fixture
-def hdl_tool_sim():
-    return HdlToolSim()
+def hdl_tool_sim(hdl_config):
+    return HdlToolSimRgy.create(hdl_config)
 
