@@ -14,15 +14,16 @@ def setup(pytestconfig):
 @pytest.fixture
 def design_source(fusesoc, setup):
     print("design_source")
-    dir = os.path.dirname(os.path.abspath(__file__))
-    fusesoc.add_library(dir)
-    files = fusesoc.getFiles("a:b:c")
-    print("files: %s" % str(files))
-    return files
+#    dir = os.path.dirname(os.path.abspath(__file__))
+#    fusesoc.add_library(dir)
+#    files = fusesoc.getFiles("a:b:c")
+#    print("files: %s" % str(files))
+#    return files
 
 @pytest.fixture
-def sim_image(design_source, hdl_tool_sim, setup):
+def sim_image(design_source, hdl_tool_sim, setup, request):
     print("design_source: %s" % design_source)
+    print("test is: %s" % request.node.name)
     return hdl_tool_sim
     return "abc"
 
