@@ -24,9 +24,22 @@ import pytest
 class HdlToolSim(object):
 
     def __init__(self):
+#        self._files = []
+#        self._incdirs = []
+#        self._defines = {}
+
         self._files = []
-        self._incdirs = []
-        self._defines = {}
+
+    def addFiles(self, files, flags=None):
+        self._files.append((flags,files))
+
+    def hasFlag(self, flag):
+        ret = False
+        for flags,files in self._files:
+            if flags is not None and flag in flags.keys():
+                ret = True
+                break
+        return ret
 
     def build(self):
         raise NotImplementedError("HdlToolSim.build: %s" % str(self))
@@ -40,9 +53,7 @@ class HdlToolSimRgy(object):
     _inst = None
 
     def __init__(self):
-        print("HdlToolSim")
         self.impl = {}
-        pass
 
     def addSimImpl(self, name, cls):
         print("addSimImpl")
@@ -53,6 +64,14 @@ class HdlToolSimRgy(object):
         if cls._inst is None:
             cls._inst = HdlToolSimRgy()
         return cls._inst
+    
+    @staticmethod
+    def get(sim):
+        rgy = HdlToolSimRgy.inst()
+        if sim in rgy.impl.keys():
+            return rgy.impl[sim]()
+        else:
+            raise Exception("pytest-hdl: sim %s is not supported" % sim)
 
     @staticmethod
     def create(config):

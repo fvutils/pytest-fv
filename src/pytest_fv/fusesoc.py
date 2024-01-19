@@ -23,7 +23,7 @@ import os
 import sys
 import pytest
 import fusesoc
-from pytest_hdl import project_info
+from pytest_fv import project_info
 from fusesoc.config import Config
 from fusesoc.coremanager import CoreManager
 from fusesoc.librarymanager import Library
@@ -37,7 +37,7 @@ def fusesoc():
 class FuseSoc(object):
     _inst = None
 
-    def __init__(self, project_info):
+    def __init__(self, project_info=None):
         self._cm = None
         self._libraries = []
 
@@ -71,6 +71,26 @@ class FuseSoc(object):
 
     def getFiles(self,
                  vlnv,
+                 flags=None,
+                 target=None):
+        top_flags = { 'is_toplevel': True}
+
+        if flags is None:
+            flags = {}
+        
+        if target is not None:
+            top_flags["target"] = target
+
+        cm = self._getCoreManager()
+        
+        core_deps = cm.get_depends(
+            Vlnv(vlnv),
+            flags=top_flags)
+        
+        return core_deps
+
+    def getFilePaths(self,
+               Pathnv,
                  file_type=None,
                  target=None,
                  include=False,
@@ -99,6 +119,7 @@ class FuseSoc(object):
             d_files = d.get_files(file_flags)
 
             for f in d_files:
+                print("f: %s" % str(f))
                 if file_type is None or f['file_type'] in file_type:
                     if include:
                         if 'include_path' in f.keys():
@@ -115,7 +136,7 @@ class FuseSoc(object):
                             files.append(path)
 
         return files
-
+    
     @classmethod
     def inst(cls, project_info):
         if cls._inst is None:
