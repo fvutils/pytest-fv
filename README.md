@@ -13,4 +13,11 @@ simulators, from which users wish choose one of several.
 Pytest-FV strongly encourages the use of FuseSoC to capture files in a modular
 fashion, and provides utility classes for querying the FuseSoC database.
 
+# Simulators
+
+# PSS Tools
+
+# Testbench plug-in tools
+- cocotb 
+
 

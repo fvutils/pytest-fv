@@ -19,9 +19,48 @@
 #*     Author: 
 #*
 #****************************************************************************
+import os
 import pytest
+from .tool_rgy import ToolKind, ToolRgy
 
-class HdlToolSim(object):
+class HdlSim(object):
+    class Args(object):
+        def __init__(self, sim, builddir):
+            self.sim = sim
+            self.builddir = builddir
+            self.logfile = None
+            self.env = None
+
+        def setenv(self, var, val):
+            if self.env is None:
+                self.env = os.environ.copy()
+            self.env[var] = val
+
+    class BuildArgs(Args):
+        def __init__(self, sim, builddir):
+            super().__init__(sim, builddir)
+            self._files = []
+            self.top = set()
+            self.logfile = "build.log"
+
+        def addFiles(self, files, flags=None):
+            self._files.append((flags, files))
+
+        @property
+        def files(self):
+            return self._files
+
+    class RunArgs(Args):
+        def __init__(self, sim, builddir, rundir):
+            super().__init__(sim, builddir)
+            self._rundir  = rundir
+            self.logfile = "run.log"
+            self.dpi_libs = []
+            self.pli_libs = []
+            self.plusargs = []
+            self.args = []
+            self.env = None
+            self.cwd = None
 
     def __init__(self):
 #        self._files = []
@@ -29,6 +68,8 @@ class HdlToolSim(object):
 #        self._defines = {}
 
         self._files = []
+        self._builddir = None
+
 
     def addFiles(self, files, flags=None):
         self._files.append((flags,files))
@@ -40,14 +81,29 @@ class HdlToolSim(object):
                 ret = True
                 break
         return ret
+    
+    def mkBuildArgs(self, builddir):
+        return HdlSim.BuildArgs(self, builddir)
 
-    def build(self):
+    def mkRunArgs(self, builddir, rundir):
+        return HdlSim.RunArgs(self, builddir, rundir)
+
+    def build(self, args : BuildArgs):
         raise NotImplementedError("HdlToolSim.build: %s" % str(self))
 
-    def run(self):
+    def run(self, args : RunArgs):
         raise NotImplementedError("HdlToolSim.run: %s" % str(self))
-
-    pass
+    
+    @staticmethod
+    def create(cfg=None):
+        if cfg is None:
+            # TODO: get global configuration
+            pass
+        elif type(cfg) == str:
+            cls = ToolRgy.inst().get(ToolKind.Sim, cfg)
+            return cls()
+        else:
+            raise Exception("Unknown config type %s" % str(cfg))
     
 class HdlToolSimRgy(object):
     _inst = None

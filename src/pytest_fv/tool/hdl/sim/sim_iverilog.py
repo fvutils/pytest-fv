@@ -1,5 +1,5 @@
 #****************************************************************************
-#* sim_xsim.py
+#* sim_i_verilog.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -24,38 +24,41 @@ import subprocess
 from pytest_fv import HdlSim, ToolRgy, ToolKind
 from .sim_vlog_base import SimVlogBase
 
-class SimXsim(SimVlogBase):
+class SimIVerilog(SimVlogBase):
 
     def __init__(self):
         super().__init__()
-        pass
 
     def build(self, build_args : HdlSim.BuildArgs):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef(build_args)
 
         cmd = [
-            'xvlog', "-sv"
+            'iverilog', "-g2001"
         ]
 
-        if self.hasFlag("sv-uvm"):
-            cmd.extend(["-L", "uvm"])
-
         for inc in inc_s:
-            cmd.append('-i')
+            cmd.append('-I')
             cmd.append(inc)
 
         for key,val in def_m.items():
-            cmd.append("-d")
+            cmd.append("-D")
             if val is None or val == "":
                 cmd.append(key)
             else:
                 cmd.append("%s=%s" % (key, val))
+
+        for top in build_args.top:
+            cmd.append('-s')
+            cmd.append(top)
+        
+        cmd.extend(['-o', 'simv.vvp'])
 
         if len(src_l) == 0:
             raise Exception("No source files specified")
 
         for vsrc in src_l:
             cmd.append(vsrc)
+
 
         logfile = build_args.logfile
         if not os.path.isabs(logfile):
@@ -64,6 +67,7 @@ class SimXsim(SimVlogBase):
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
             log.write("** Compile\n")
+            log.write("** Command: %s\n" % str(cmd))
             log.flush()
             res = subprocess.run(
                 cmd, 
@@ -77,38 +81,19 @@ class SimXsim(SimVlogBase):
         if len(cpp_l) > 0:
             print("TODO: need to compile DPI")
 
-        cmd = [ 'xelab' ]
-#        '--relax',  '--snapshot', 'snap' ]
-
-        if len(build_args.top) == 0:
-            raise Exception("Must specify root module")
-
-        for top in build_args.top:
-            cmd.append(top)
-        cmd.extend(['-relax', '-s', 'top', '-timescale', '1ns/1ps'])
-        print("cmd: %s" % str(cmd))
-        with open(logfile, "a") as log:
-            log.write("** Elab\n")
-            log.flush()
-            res = subprocess.run(
-                cmd, 
-                cwd=build_args.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
-
-            if res.returncode != 0:
-                raise Exception("Compilation failed")
-
     def run(self, run_args : HdlSim.RunArgs):
-        cmd = [ 'xsim', '--runall']
+        cmd = [ 'vvp' ]
 
-        cmd.append('top')
+        cmd.append('simv.vvp')
 
         logfile = run_args.logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(run_args._rundir, logfile)
 
         with open(logfile, "w") as log:
+            log.write("** Command: %s\n" % str(cmd))
+            log.write("** CWD: %s\n" % run_args._rundir)
+            log.flush()
             res = subprocess.run(
                 cmd,
                 cwd=run_args._rundir,
@@ -122,5 +107,5 @@ class SimXsim(SimVlogBase):
         pass
 
 
-ToolRgy.register(ToolKind.Sim, "xsm", SimXsim)
+ToolRgy.register(ToolKind.Sim, "ivl", SimIVerilog)
 

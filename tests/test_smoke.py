@@ -1,7 +1,7 @@
 import os
 import pytest
-from pytest_hdl import *
-#import pytest_hdl
+from pytest_fv import *
+from .test_util import Util
 
 
 @pytest.fixture
@@ -27,6 +27,42 @@ def sim_image(design_source, hdl_tool_sim, setup, request):
     return hdl_tool_sim
     return "abc"
 
-def test_smoke(sim_image):
-    print("test_smoke")
-    print("design_source: %s" % str(design_source))
+def test_smoke(request):
+    util = Util(request)
+
+    util.mkFile("top.sv", """
+    module top;
+        initial begin
+            $display(">> Hello World");
+            $finish;
+        end
+    endmodule
+    """)
+
+    util.mkCore("smoke", ["top.sv"])
+
+    fs = FuseSoc()
+    fs.add_library(util.test_rundir)
+
+    files = fs.getFiles("smoke")
+    print("files: %s" % str(files))
+
+#    sim = HdlSim.create("ivl")
+#    sim = HdlSim.create("xsm")
+    sim = HdlSim.create("vl")
+
+    build_args = sim.mkBuildArgs(util.test_rundir)
+    build_args.addFiles(files)
+    build_args.top.add("top")
+
+    sim.build(build_args)
+
+    run_args = sim.mkRunArgs(util.test_rundir, util.test_rundir)
+    sim.run(run_args)
+
+    util.assertLineExists(
+        os.path.join(util.test_rundir, 'run.log'),
+        ">> Hello World")
+
+
+
