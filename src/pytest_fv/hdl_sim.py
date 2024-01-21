@@ -21,6 +21,7 @@
 #****************************************************************************
 import os
 import pytest
+from .fv_config import FvConfig
 from .tool_rgy import ToolKind, ToolRgy
 
 class HdlSim(object):
@@ -96,50 +97,14 @@ class HdlSim(object):
     
     @staticmethod
     def create(cfg=None):
+        cls = None
         if cfg is None:
-            # TODO: get global configuration
-            pass
+            cfg = FvConfig.inst()
+            cls = ToolRgy.inst().get(ToolKind.Sim, cfg.getHdlSim())
         elif type(cfg) == str:
             cls = ToolRgy.inst().get(ToolKind.Sim, cfg)
-            return cls()
         else:
             raise Exception("Unknown config type %s" % str(cfg))
+        return cls()
     
-class HdlToolSimRgy(object):
-    _inst = None
-
-    def __init__(self):
-        self.impl = {}
-
-    def addSimImpl(self, name, cls):
-        print("addSimImpl")
-        self.impl[name] = cls
-
-    @classmethod
-    def inst(cls):
-        if cls._inst is None:
-            cls._inst = HdlToolSimRgy()
-        return cls._inst
-    
-    @staticmethod
-    def get(sim):
-        rgy = HdlToolSimRgy.inst()
-        if sim in rgy.impl.keys():
-            return rgy.impl[sim]()
-        else:
-            raise Exception("pytest-hdl: sim %s is not supported" % sim)
-
-    @staticmethod
-    def create(config):
-        sim = config.getToolSim()
-        rgy = HdlToolSimRgy.inst()
-        if sim in rgy.impl.keys():
-            return rgy.impl[sim]()
-        else:
-            raise Exception("pytest-hdl: sim %s is not supported" % sim)
-
-
-@pytest.fixture
-def hdl_tool_sim(hdl_config):
-    return HdlToolSimRgy.create(hdl_config)
 

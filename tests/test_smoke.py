@@ -27,7 +27,7 @@ def sim_image(design_source, hdl_tool_sim, setup, request):
     return hdl_tool_sim
     return "abc"
 
-def test_smoke(request):
+def test_smoke(request, pytestconfig):
     util = Util(request)
 
     util.mkFile("top.sv", """
@@ -49,7 +49,11 @@ def test_smoke(request):
 
 #    sim = HdlSim.create("ivl")
 #    sim = HdlSim.create("xsm")
-    sim = HdlSim.create("vl")
+#    sim = HdlSim.create("vl")
+
+    FvConfig.inst(pytestconfig)
+
+    sim = HdlSim.create()
 
     build_args = sim.mkBuildArgs(util.test_rundir)
     build_args.addFiles(files)

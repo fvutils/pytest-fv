@@ -20,4 +20,14 @@ fashion, and provides utility classes for querying the FuseSoC database.
 # Testbench plug-in tools
 - cocotb 
 
+# Environment variables
 
+PYTEST_FV_HDLSIM - 
+
+# INI settings
+
+.pytest.ini
+
+## pytest-fv section
+- tool.hdlsim
+- 

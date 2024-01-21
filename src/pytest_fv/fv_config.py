@@ -23,38 +23,47 @@ import os
 import pytest
 import configparser
 
-class HdlConfig(object):
-    DEFAULT_TOOL_SIM = "xsim"
+class FvConfig(object):
+    DEFAULT_TOOL_HDLSIM = "xsm"
+
+    _inst = None
 
     def __init__(self, pytestconfig):
 
-        if pytestconfig.inipath is not None:
+        self._have_ini = False
+        if pytestconfig is not None and pytestconfig.inipath is not None:
             self.ini = configparser.ConfigParser()
             self.ini.read(pytestconfig.inipath)
+            self._have_ini = True
         else:
             self.ini = {}
 
         pass
 
     def _pytest_hdl(self):
-        if "pytest-hdl" not in self.ini.keys():
-            self.ini["pytest-hdl"] = {}
-        return self.ini["pytest-hdl"]
+        if "pytest-fv" not in self.ini.keys():
+            self.ini["pytest-fv"] = {}
+        return self.ini["pytest-fv"]
 
-    def getToolSim(self):
+    def getHdlSim(self):
         pytest_hdl = self._pytest_hdl()
 
-        if "PYTEST_HDL_SIM" in os.environ.keys() and os.environ["PYTEST_HDL_SIM"] != "":
-            return os.environ["PYTEST_HDL_SIM"]
-        elif "tool.sim" in pytest_hdl.keys():
-            return pytest_hdl["tool.sim"]
+        if "PYTEST_FV_HDLSIM" in os.environ.keys() and os.environ["PYTEST_FV_HDLSIM"] != "":
+            return os.environ["PYTEST_FV_HDLSIM"]
+        elif "tool.hdlsim" in pytest_hdl.keys():
+            return pytest_hdl["tool.hdlsim"]
         else:
-            return HdlConfig.DEFAULT_TOOL_SIM
+            return FvConfig.DEFAULT_TOOL_HDLSIM
+    
+    @classmethod
+    def inst(cls, pytestconfig=None):
+        if cls._inst is None:
+            cls._inst = FvConfig(pytestconfig)
+        elif pytestconfig is not None and not cls._inst._have_ini:
+            cls._inst = FvConfig(pytestconfig)
+        return cls._inst
         
 
 @pytest.fixture
 def hdl_config(pytestconfig):
-    return HdlConfig(pytestconfig)
-    print("hdl_config")
-    return "abc"
-    pass
+    return FvConfig.inst(pytestconfig)
