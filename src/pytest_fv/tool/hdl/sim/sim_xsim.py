@@ -85,7 +85,10 @@ class SimXsim(SimVlogBase):
 
         for top in build_args.top:
             cmd.append(top)
+
         cmd.extend(['-relax', '-s', 'top', '-timescale', '1ns/1ps'])
+        cmd.extend(['-debug', 'all'])
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
             log.write("** Elab\n")
@@ -100,7 +103,25 @@ class SimXsim(SimVlogBase):
                 raise Exception("Compilation failed")
 
     def run(self, run_args : HdlSim.RunArgs):
-        cmd = [ 'xsim', '--runall']
+        cmd = [ 'xsim' ]
+        cmd.extend(['--onerror', 'quit'])
+        cmd.extend(['-t', 'run.tcl'])
+
+        with open("run.tcl", "w") as fp:
+            fp.write("if {[catch {open_vcd sim.vcd} errmsg]} {\n")
+            fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
+            fp.write("  exit 1\n")
+            fp.write("}\n")
+            fp.write("if {[catch {log_vcd /hdl_top/*} errmsg]} {\n")
+            fp.write("  puts \"Failed to add traces: $errmsg\"\n")
+            fp.write("  exit 1\n")
+            fp.write("}\n")
+            fp.write("run -all\n")
+            fp.write("if {[catch {flush_vcd} errmsg]} {\n")
+            fp.write("  puts \"Failed to flush VCD: $errmsg\"\n")
+            fp.write("  exit 1\n")
+            fp.write("}\n")
+            fp.write("exit\n")
 
         cmd.append('top')
 
