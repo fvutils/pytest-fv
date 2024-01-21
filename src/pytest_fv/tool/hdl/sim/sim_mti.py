@@ -1,5 +1,5 @@
 #****************************************************************************
-#* sim_xsim.py
+#* sim_mti.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -24,7 +24,7 @@ import subprocess
 from pytest_fv import HdlSim, ToolRgy, ToolKind
 from .sim_vlog_base import SimVlogBase
 
-class SimXsim(SimVlogBase):
+class SimMti(SimVlogBase):
 
     def __init__(self, builddir):
         super().__init__(builddir)
@@ -34,22 +34,20 @@ class SimXsim(SimVlogBase):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
-            'xvlog', "-sv"
+            'vlog', "-sv"
         ]
 
-        if self.hasFlag("sv-uvm"):
-            cmd.extend(["-L", "uvm"])
+#        if self.hasFlag("sv-uvm"):
+#            cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
-            cmd.append('-i')
-            cmd.append(inc)
+            cmd.append('+incdir+%s' % inc)
 
         for key,val in def_m.items():
-            cmd.append("-d")
             if val is None or val == "":
-                cmd.append(key)
+                cmd.append("+define+%s" % key)
             else:
-                cmd.append("%s=%s" % (key, val))
+                cmd.append("+define+%s=%s" % (key, val))
 
         if len(src_l) == 0:
             raise Exception("No source files specified")
@@ -77,7 +75,7 @@ class SimXsim(SimVlogBase):
         if len(cpp_l) > 0:
             print("TODO: need to compile DPI")
 
-        cmd = [ 'xelab' ]
+        cmd = [ 'vopt' ]
 #        '--relax',  '--snapshot', 'snap' ]
 
         if len(self.top) == 0:
@@ -86,9 +84,9 @@ class SimXsim(SimVlogBase):
         for top in self.top:
             cmd.append(top)
 
-        cmd.extend(['-relax', '-s', 'top', '-timescale', '1ns/1ps'])
+        cmd.extend(['-o', 'top', '-timescale', '1ns/1ps'])
         if self.debug:
-            cmd.extend(['-debug', 'all'])
+            cmd.append('-debug')
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
@@ -104,38 +102,37 @@ class SimXsim(SimVlogBase):
                 raise Exception("Compilation failed")
 
     def run(self, args : HdlSim.RunArgs):
-        cmd = [ 'xsim' ]
-        cmd.extend(['--onerror', 'quit'])
-        cmd.extend(['-t', 'run.tcl'])
+        cmd = [ 'vsim', '-batch' ]
+        cmd.extend(['-do', 'run.tcl'])
 
         with open("run.tcl", "w") as fp:
             if args.debug:
-                fp.write("if {[catch {open_vcd sim.vcd} errmsg]} {\n")
+                fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
                 fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
                 fp.write("  exit 1\n")
                 fp.write("}\n")
                 spec = ""
                 for t in self.top:
                     spec += " /%s/*" % t
-                fp.write("if {[catch {log_vcd %s} errmsg]} {\n" % spec)
+                fp.write("if {[catch {vcd add -r%s} errmsg]} {\n" % spec)
                 fp.write("  puts \"Failed to add traces: $errmsg\"\n")
                 fp.write("  exit 1\n")
                 fp.write("}\n")
 
             fp.write("run -all\n")
 
-            if args.debug:
-                fp.write("if {[catch {flush_vcd} errmsg]} {\n")
-                fp.write("  puts \"Failed to flush VCD: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
+            # if args.debug:
+            #     fp.write("if {[catch {flush_vcd} errmsg]} {\n")
+            #     fp.write("  puts \"Failed to flush VCD: $errmsg\"\n")
+            #     fp.write("  exit 1\n")
+            #     fp.write("}\n")
 
-            fp.write("exit\n")
+            fp.write("quit -f\n")
 
         cmd.append('top')
 
         for pa in args.plusargs:
-            cmd.extend(['--testplusarg', pa])
+            cmd.append("+%s" % pa)
 
         logfile = args.run_logfile
         if not os.path.isabs(logfile):
@@ -155,5 +152,5 @@ class SimXsim(SimVlogBase):
         pass
 
 
-ToolRgy.register(ToolKind.Sim, "xsm", SimXsim)
+ToolRgy.register(ToolKind.Sim, "mti", SimMti)
 

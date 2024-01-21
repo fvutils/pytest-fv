@@ -26,11 +26,11 @@ from .sim_vlog_base import SimVlogBase
 
 class SimVerilator(SimVlogBase):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, builddir):
+        super().__init__(builddir)
 
-    def build(self, build_args : HdlSim.BuildArgs):
-        src_l, cpp_l, inc_s, def_m = self._getSrcIncDef(build_args)
+    def build(self):
+        src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
             'verilator', '--binary', '-sv', '-o', 'simv'
@@ -45,7 +45,7 @@ class SimVerilator(SimVlogBase):
             else:
                 cmd.append("+define+%s=%s" % (key, val))
 
-        for top in build_args.top:
+        for top in self.top:
             cmd.append('--top-module')
             cmd.append(top)
 
@@ -56,9 +56,9 @@ class SimVerilator(SimVlogBase):
             cmd.append(vsrc)
 
 
-        logfile = build_args.logfile
+        logfile = self.build_logfile
         if not os.path.isabs(logfile):
-            logfile = os.path.join(build_args.builddir, logfile)
+            logfile = os.path.join(self.builddir, logfile)
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
@@ -67,7 +67,7 @@ class SimVerilator(SimVlogBase):
             log.flush()
             res = subprocess.run(
                 cmd, 
-                cwd=build_args.builddir,
+                cwd=self.builddir,
                 stderr=subprocess.STDOUT,
                 stdout=log)
             
@@ -78,19 +78,19 @@ class SimVerilator(SimVlogBase):
             print("TODO: need to compile DPI")
 
     def run(self, run_args : HdlSim.RunArgs):
-        cmd = [ os.path.join(run_args.builddir, "obj_dir", "simv") ]
+        cmd = [ os.path.join(self.builddir, "obj_dir", "simv") ]
 
-        logfile = run_args.logfile
+        logfile = run_args.run_logfile
         if not os.path.isabs(logfile):
-            logfile = os.path.join(run_args._rundir, logfile)
+            logfile = os.path.join(run_args.rundir, logfile)
 
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))
-            log.write("** CWD: %s\n" % run_args._rundir)
+            log.write("** CWD: %s\n" % run_args.rundir)
             log.flush()
             res = subprocess.run(
                 cmd,
-                cwd=run_args._rundir,
+                cwd=run_args.rundir,
                 env=run_args.env,
                 stderr=subprocess.STDOUT,
                 stdout=log)

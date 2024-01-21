@@ -33,10 +33,10 @@ class HdlSimExt(object):
     def updatesRun(self):
         return self._updatesRun
 
-    def applyBuild(self, build_args : HdlSim.BuildArgs):
-        raise NotImplementedError("Class %s does not implement applyBuild" % str(type(self)))
+    # def applyBuild(self, build_args : HdlSim.BuildArgs):
+    #     raise NotImplementedError("Class %s does not implement applyBuild" % str(type(self)))
 
-    def applyRun(self, run_args : HdlSim.RunArgs):
-        raise NotImplementedError("Class %s does not implement applyRun" % str(type(self)))
+    # def applyRun(self, run_args : HdlSim.RunArgs):
+    #     raise NotImplementedError("Class %s does not implement applyRun" % str(type(self)))
 
 

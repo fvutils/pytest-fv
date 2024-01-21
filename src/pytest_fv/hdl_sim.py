@@ -25,60 +25,50 @@ from .fv_config import FvConfig
 from .tool_rgy import ToolKind, ToolRgy
 
 class HdlSim(object):
-    class Args(object):
-        def __init__(self, sim, builddir):
+
+    class RunArgs(object):
+        def __init__(self, sim, rundir):
             self.sim = sim
-            self.builddir = builddir
-            self.logfile = None
-            self.env = None
+            self.debug  = sim.debug
+            self.rundir = rundir
+            self.run_logfile = sim.run_logfile
+            self.dpi_libs = sim.dpi_libs.copy()
+            self.pli_libs = sim.pli_libs.copy()
+            self.plusargs = sim.plusargs.copy()
+            self.args = sim.args.copy()
+            self.env  = None if sim.env is None else sim.env.copy()
 
         def setenv(self, var, val):
             if self.env is None:
                 self.env = os.environ.copy()
             self.env[var] = val
 
-    class BuildArgs(Args):
-        def __init__(self, sim, builddir):
-            super().__init__(sim, builddir)
-            self._files = []
-            self.top = set()
-            self.logfile = "build.log"
-
-        def addFiles(self, files, flags=None):
-            self._files.append((flags, files))
-
-        def hasFlag(self, flag):
-            ret = False
-            for flags,files in self._files:
-                if flags is not None and flag in flags.keys():
-                    ret = True
-                    break
-            return ret
-
-        @property
-        def files(self):
-            return self._files
-
-    class RunArgs(Args):
-        def __init__(self, sim, builddir, rundir):
-            super().__init__(sim, builddir)
-            self._rundir  = rundir
-            self.logfile = "run.log"
-            self.dpi_libs = []
-            self.pli_libs = []
-            self.plusargs = []
-            self.args = []
-            self.env = None
-            self.cwd = None
-
-    def __init__(self):
+    def __init__(self, builddir):
 #        self._files = []
 #        self._incdirs = []
 #        self._defines = {}
 
-        self._files = []
-        self._builddir = None
+        # Common
+        self.env = None
+        self.debug = False
 
+        # Build
+        self.builddir = builddir
+        self._files = []
+        self.top = set()
+        self.build_logfile = "build.log"
+
+        # Run
+        self.run_logfile = "run.log"
+        self.dpi_libs = []
+        self.pli_libs = []
+        self.plusargs = []
+        self.args = []
+
+    def setenv(self, var, val):
+        if self.env is None:
+            self.env = os.environ.copy()
+        self.env[var] = val
 
     def addFiles(self, files, flags=None):
         self._files.append((flags,files))
@@ -91,20 +81,17 @@ class HdlSim(object):
                 break
         return ret
     
-    def mkBuildArgs(self, builddir):
-        return HdlSim.BuildArgs(self, builddir)
-
-    def mkRunArgs(self, builddir, rundir):
-        return HdlSim.RunArgs(self, builddir, rundir)
-
-    def build(self, args : BuildArgs):
+    def mkRunArgs(self, rundir):
+        return HdlSim.RunArgs(self, rundir)
+    
+    def build(self):
         raise NotImplementedError("HdlToolSim.build: %s" % str(self))
 
-    def run(self, args : RunArgs):
+    def run(self, args : 'HdlSim.RunArgs'):
         raise NotImplementedError("HdlToolSim.run: %s" % str(self))
     
     @staticmethod
-    def create(cfg=None):
+    def create(builddir, cfg=None):
         cls = None
         if cfg is None:
             cfg = FvConfig.inst()
@@ -113,6 +100,6 @@ class HdlSim(object):
             cls = ToolRgy.inst().get(ToolKind.Sim, cfg)
         else:
             raise Exception("Unknown config type %s" % str(cfg))
-        return cls()
+        return cls(builddir)
     
 

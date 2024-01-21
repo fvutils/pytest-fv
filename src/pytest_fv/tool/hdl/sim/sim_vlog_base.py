@@ -24,13 +24,13 @@ from pytest_fv import HdlSim
 
 class SimVlogBase(HdlSim):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, builddir):
+        super().__init__(builddir)
         self._dpi_lib = []
         self._pli_lib = []
         pass
 
-    def _getSrcIncDef(self, args : HdlSim.BuildArgs):
+    def _getSrcIncDef(self):
         src_l = []
         src_s = set()
         cpp_l = []
@@ -40,7 +40,7 @@ class SimVlogBase(HdlSim):
 
         file_type = {'verilogSource', 'systemVerilogSource'}
 
-        for flags,deps in args.files:
+        for flags,deps in self._files:
             file_flags = {'is_toplevel': True}
 
             if flags is not None:

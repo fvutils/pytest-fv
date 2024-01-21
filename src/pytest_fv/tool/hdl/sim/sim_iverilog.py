@@ -26,11 +26,11 @@ from .sim_vlog_base import SimVlogBase
 
 class SimIVerilog(SimVlogBase):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, builddir):
+        super().__init__(builddir)
 
-    def build(self, build_args : HdlSim.BuildArgs):
-        src_l, cpp_l, inc_s, def_m = self._getSrcIncDef(build_args)
+    def build(self):
+        src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
             'iverilog', "-g2001"
@@ -47,7 +47,7 @@ class SimIVerilog(SimVlogBase):
             else:
                 cmd.append("%s=%s" % (key, val))
 
-        for top in build_args.top:
+        for top in self.top:
             cmd.append('-s')
             cmd.append(top)
         
@@ -60,9 +60,9 @@ class SimIVerilog(SimVlogBase):
             cmd.append(vsrc)
 
 
-        logfile = build_args.logfile
+        logfile = self.build_logfile
         if not os.path.isabs(logfile):
-            logfile = os.path.join(build_args.builddir, logfile)
+            logfile = os.path.join(self.builddir, logfile)
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
@@ -71,7 +71,7 @@ class SimIVerilog(SimVlogBase):
             log.flush()
             res = subprocess.run(
                 cmd, 
-                cwd=build_args.builddir,
+                cwd=self.builddir,
                 stderr=subprocess.STDOUT,
                 stdout=log)
             
@@ -84,11 +84,11 @@ class SimIVerilog(SimVlogBase):
     def run(self, run_args : HdlSim.RunArgs):
         cmd = [ 'vvp' ]
 
-        cmd.append('simv.vvp')
+        cmd.append(os.path.join(self.builddir, 'simv.vvp'))
 
         logfile = run_args.logfile
         if not os.path.isabs(logfile):
-            logfile = os.path.join(run_args._rundir, logfile)
+            logfile = os.path.join(run_args.rundir, logfile)
 
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))
