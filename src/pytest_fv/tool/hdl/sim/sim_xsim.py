@@ -37,7 +37,7 @@ class SimXsim(SimVlogBase):
             'xvlog', "-sv"
         ]
 
-        if self.hasFlag("sv-uvm"):
+        if build_args.hasFlag("sv-uvm"):
             cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
@@ -103,6 +103,9 @@ class SimXsim(SimVlogBase):
         cmd = [ 'xsim', '--runall']
 
         cmd.append('top')
+
+        for pa in run_args.plusargs:
+            cmd.extend(['--testplusarg', pa])
 
         logfile = run_args.logfile
         if not os.path.isabs(logfile):

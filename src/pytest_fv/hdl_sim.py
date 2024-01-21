@@ -47,6 +47,14 @@ class HdlSim(object):
         def addFiles(self, files, flags=None):
             self._files.append((flags, files))
 
+        def hasFlag(self, flag):
+            ret = False
+            for flags,files in self._files:
+                if flags is not None and flag in flags.keys():
+                    ret = True
+                    break
+            return ret
+
         @property
         def files(self):
             return self._files
