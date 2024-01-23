@@ -41,6 +41,8 @@ class SimVlogBase(HdlSim):
         file_type = {'verilogSource', 'systemVerilogSource'}
 
         for flags,deps in self._files:
+            print("flags: %s" % str(flags))
+            print("deps: %s" % str(deps))
             file_flags = {'is_toplevel': True}
 
             if flags is not None:

@@ -20,6 +20,7 @@
 #*
 #****************************************************************************
 import os
+import shutil
 import subprocess
 from pytest_fv import HdlSim, ToolRgy, ToolKind
 from .sim_vlog_base import SimVlogBase
@@ -78,6 +79,7 @@ class SimXsim(SimVlogBase):
             print("TODO: need to compile DPI")
 
         cmd = [ 'xelab' ]
+#        cmd.extend(['-mt', 'off'])
 #        '--relax',  '--snapshot', 'snap' ]
 
         if len(self.top) == 0:
@@ -104,11 +106,24 @@ class SimXsim(SimVlogBase):
                 raise Exception("Compilation failed")
 
     def run(self, args : HdlSim.RunArgs):
+
+        # Manage clean-up and initialization of run directory
+        if args.rundir != self.builddir:
+            if os.path.isdir(args.rundir):
+                shutil.rmtree(args.rundir)
+            os.makedirs(args.rundir)
+
+            os.symlink(
+                os.path.join(self.builddir, "xsim.dir"),
+                os.path.join(args.rundir, "xsim.dir")
+            )
+
+
         cmd = [ 'xsim' ]
         cmd.extend(['--onerror', 'quit'])
         cmd.extend(['-t', 'run.tcl'])
 
-        with open("run.tcl", "w") as fp:
+        with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
             if args.debug:
                 fp.write("if {[catch {open_vcd sim.vcd} errmsg]} {\n")
                 fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
