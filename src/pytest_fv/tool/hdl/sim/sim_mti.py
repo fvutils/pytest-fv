@@ -59,6 +59,9 @@ class SimMti(SimVlogBase):
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
 
+        if not os.path.isdir(self.builddir):
+            os.makedirs(self.builddir)
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
             log.write("** Compile\n")
@@ -102,10 +105,35 @@ class SimMti(SimVlogBase):
                 raise Exception("Compilation failed")
 
     def run(self, args : HdlSim.RunArgs):
+
+        if not os.path.isdir(args.rundir):
+            os.makedirs(args.rundir)
+
+        logfile = args.run_logfile
+        if not os.path.isabs(logfile):
+            logfile = os.path.join(args.rundir, logfile)
+
+        m = "w"
+
+        if self.builddir != args.rundir:
+            # Need to map 
+            cmd = [ 'vmap', 'work', os.path.join(self.builddir, 'work') ]
+
+            with open(logfile, m) as log:
+                m = "a"
+                res = subprocess.run(
+                    cmd,
+                    cwd=args.rundir,
+                    stdout=log,
+                    stderr=subprocess.STDOUT)
+            
+            if res.returncode != 0:
+                raise Exception("Failed to map library")
+
         cmd = [ 'vsim', '-batch' ]
         cmd.extend(['-do', 'run.tcl'])
 
-        with open("run.tcl", "w") as fp:
+        with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
             if args.debug:
                 fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
                 fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
@@ -131,14 +159,15 @@ class SimMti(SimVlogBase):
 
         cmd.append('top')
 
+        for dpi in args.dpi_libs:
+            cmd.extend(["-sv_lib", dpi])
+
         for pa in args.plusargs:
             cmd.append("+%s" % pa)
 
-        logfile = args.run_logfile
-        if not os.path.isabs(logfile):
-            logfile = os.path.join(args.rundir, logfile)
 
-        with open(logfile, "w") as log:
+        with open(logfile, m) as log:
+            m = "a"
             res = subprocess.run(
                 cmd,
                 cwd=args.rundir,

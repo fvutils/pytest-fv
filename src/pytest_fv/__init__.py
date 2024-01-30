@@ -1,5 +1,6 @@
 
 #from .test_case import 
+from .dirconfig import *
 from .fv_config import *
 from .tool_rgy import ToolRgy
 from .hdl_sim import *
