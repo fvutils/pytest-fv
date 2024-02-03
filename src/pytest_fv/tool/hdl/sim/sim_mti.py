@@ -30,7 +30,7 @@ class SimMti(SimVlogBase):
         super().__init__(builddir)
         pass
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
@@ -104,7 +104,7 @@ class SimMti(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
 
         if not os.path.isdir(args.rundir):
             os.makedirs(args.rundir)

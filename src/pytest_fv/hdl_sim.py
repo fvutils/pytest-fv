@@ -23,6 +23,8 @@ import os
 import pytest
 from .fv_config import FvConfig
 from .tool_rgy import ToolKind, ToolRgy
+from .task import Task
+from .task_delegator import TaskDelegator
 
 class HdlSim(object):
 
@@ -84,11 +86,17 @@ class HdlSim(object):
     def mkRunArgs(self, rundir):
         return HdlSim.RunArgs(self, rundir)
     
-    def build(self):
+    async def build(self):
         raise NotImplementedError("HdlToolSim.build: %s" % str(self))
 
-    def run(self, args : 'HdlSim.RunArgs'):
+    async def run(self, args : 'HdlSim.RunArgs'):
         raise NotImplementedError("HdlToolSim.run: %s" % str(self))
+    
+    def mkBuildTask(self) -> Task:
+        return TaskDelegator("sim build", self.build())
+    
+    def mkRunTask(self, args : 'HdlSim.RunArgs') -> Task:
+        return TaskDelegator("sim run", self.run(args))
     
     @staticmethod
     def create(builddir, cfg=None):
