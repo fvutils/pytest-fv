@@ -6,6 +6,7 @@ from .tool_rgy import ToolRgy
 from .hdl_sim import *
 from .hdl_sim_ext import *
 from .project_info import *
+from .ext import Ext
 from .flow import Flow
 from .flow_sim import FlowSim
 from .fusesoc import *

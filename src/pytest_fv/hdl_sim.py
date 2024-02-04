@@ -56,6 +56,7 @@ class HdlSim(object):
 
         # Build
         self.builddir = builddir
+        self._prefile_paths = []
         self._files = []
         self.top = set()
         self.build_logfile = "build.log"
@@ -71,6 +72,9 @@ class HdlSim(object):
         if self.env is None:
             self.env = os.environ.copy()
         self.env[var] = val
+
+    def addPreFilePath(self, path):
+        self._prefile_paths.append(path)
 
     def addFiles(self, files, flags=None):
         self._files.append((flags,files))

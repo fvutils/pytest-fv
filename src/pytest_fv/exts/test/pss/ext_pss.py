@@ -1,5 +1,5 @@
 #****************************************************************************
-#* flow.py
+#* ext_pss.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -19,31 +19,18 @@
 #*     Author: 
 #*
 #****************************************************************************
-from pytest_fv import DirConfig
-from typing import List, Dict
-from .phase_compound import PhaseCompound
-from .fusesoc import FuseSoc
+from pytest_fv import Ext
 
-class Flow(PhaseCompound):
+class ExtPSS(Ext):
 
-    def __init__(self, dirconfig : DirConfig):
-        super().__init__("")
-        self.dirconfig = dirconfig
-        self.fs = FuseSoc()
-        self._tool_m = {}
-        self._ext_m = {}
+    def __init__(self, name):
+        super().__init__("test.pss", name)
+        self.pss_core_vlnv = None
+        self.pss_vlnv = None
 
-    def getBuildDir(self):
-        return self.dirconfig.builddir()
-
-    def addTool(self, tool, kind):
-        self._tool_m[kind] = tool
-
-    def getTool(self, kind):
-        return self._tool_m[kind]
-    
-    def addExt(self, ext, name):
-        self._ext_m[name] = ext
-
-
+    @staticmethod
+    def create(cfg = None):
+        from .ext_pss_zuspec import ExtPSSZuspec
+        return ExtPSSZuspec()
+        pass
 

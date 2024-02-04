@@ -49,8 +49,11 @@ class SimMti(SimVlogBase):
             else:
                 cmd.append("+define+%s=%s" % (key, val))
 
-        if len(src_l) == 0:
+        if len(src_l) == 0 and len(self._prefile_paths) == 0:
             raise Exception("No source files specified")
+        
+        for vsrc in self._prefile_paths:
+            cmd.append(vsrc)
 
         for vsrc in src_l:
             cmd.append(vsrc)

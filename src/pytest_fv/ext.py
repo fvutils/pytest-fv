@@ -1,5 +1,5 @@
 #****************************************************************************
-#* flow.py
+#* ext.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -19,31 +19,14 @@
 #*     Author: 
 #*
 #****************************************************************************
-from pytest_fv import DirConfig
-from typing import List, Dict
-from .phase_compound import PhaseCompound
-from .fusesoc import FuseSoc
 
-class Flow(PhaseCompound):
+class Ext(object):
 
-    def __init__(self, dirconfig : DirConfig):
-        super().__init__("")
-        self.dirconfig = dirconfig
-        self.fs = FuseSoc()
-        self._tool_m = {}
-        self._ext_m = {}
+    def __init__(self, kind, name):
+        self._kind = kind
+        self._name = name
+        pass
 
-    def getBuildDir(self):
-        return self.dirconfig.builddir()
-
-    def addTool(self, tool, kind):
-        self._tool_m[kind] = tool
-
-    def getTool(self, kind):
-        return self._tool_m[kind]
-    
-    def addExt(self, ext, name):
-        self._ext_m[name] = ext
-
-
+    def apply(self, flow):
+        raise NotImplementedError("Class %s doesn't implement apply" % str(type(self)))
 
