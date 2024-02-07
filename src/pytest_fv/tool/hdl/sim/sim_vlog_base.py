@@ -65,8 +65,5 @@ class SimVlogBase(HdlSim):
                         if path not in src_s:
                             src_s.add(path)
                             src_l.append(path)
-                    else:
-                        raise Exception("File-type %s not supported by sim %s" % (
-                            f['file_type'], str(type(self))))
 
         return (src_l, cpp_l, inc_s, def_m)

@@ -39,7 +39,7 @@ class ExtPSSZuspec(ExtPSS):
 
         files = []
         file_type = {'pssSource'}
-        file_flags = {'is_toplevel': True, 'pss': True}
+        file_flags = {'is_toplevel': True}
         for dep in deps:
             d_files = dep.get_files(file_flags)
 
