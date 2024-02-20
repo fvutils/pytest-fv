@@ -21,6 +21,9 @@
 #****************************************************************************
 import os
 import pytest
+from typing import List,Set,Dict
+from .fs import FS
+from .fs_config import FSConfig
 from .fv_config import FvConfig
 from .tool_rgy import ToolKind, ToolRgy
 from .task import Task
@@ -38,17 +41,19 @@ class HdlSim(object):
             self.pli_libs = sim.pli_libs.copy()
             self.plusargs = sim.plusargs.copy()
             self.args = sim.args.copy()
-            self.env  = None if sim.env is None else sim.env.copy()
+            self.env  = os.environ.copy() if sim.env is None else sim.env.copy()
 
         def setenv(self, var, val):
             if self.env is None:
                 self.env = os.environ.copy()
             self.env[var] = val
 
-    def __init__(self, builddir):
+    def __init__(self, builddir, fs_cfg : FSConfig):
 #        self._files = []
 #        self._incdirs = []
 #        self._defines = {}
+        
+        self.fs_cfg = fs_cfg
 
         # Common
         self.env = None
@@ -57,7 +62,7 @@ class HdlSim(object):
         # Build
         self.builddir = builddir
         self._prefile_paths = []
-        self._files = []
+        self._filesets : List[FS] = []
         self.top = set()
         self.build_logfile = "build.log"
 
@@ -76,8 +81,8 @@ class HdlSim(object):
     def addPreFilePath(self, path):
         self._prefile_paths.append(path)
 
-    def addFiles(self, files, flags=None):
-        self._files.append((flags,files))
+    def addFileset(self, fs : FS):
+        self._filesets.append(fs)
 
     def hasFlag(self, flag):
         ret = False

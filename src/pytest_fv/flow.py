@@ -23,6 +23,7 @@ from pytest_fv import DirConfig
 from typing import List, Dict
 from .phase_compound import PhaseCompound
 from .fusesoc import FuseSoc
+from .fs import FS
 
 class Flow(PhaseCompound):
 
@@ -44,6 +45,13 @@ class Flow(PhaseCompound):
     
     def addExt(self, ext, name):
         self._ext_m[name] = ext
+    
+    def addFileset(self, tool, fs : FS):
+        if tool in self._tool_m.keys():
+            self._tool_m[tool].addFileset(fs)
+        else:
+            raise Exception("No tool \"%s\" is registered" % tool)
+
 
 
 

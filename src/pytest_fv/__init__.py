@@ -9,6 +9,9 @@ from .project_info import *
 from .ext import Ext
 from .flow import Flow
 from .flow_sim import FlowSim
+from .fs import FS
+from .fs_paths import FSPaths
+from .fs_vlnv import FSVlnv
 from .fusesoc import *
 
 from .tool import *

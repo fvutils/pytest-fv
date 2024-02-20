@@ -1,5 +1,5 @@
 #****************************************************************************
-#* sim_vlog_base.py
+#* fs.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -19,34 +19,20 @@
 #*     Author: 
 #*
 #****************************************************************************
-import os
-from pytest_fv import HdlSim
-from pytest_fv.fs_config import FSConfig
+from typing import List,Set,Dict
 
-class SimVlogBase(HdlSim):
+from .fs_config import FSConfig
 
-    def __init__(self, builddir, fs_config : FSConfig):
-        super().__init__(builddir, fs_config)
-        self._dpi_lib = []
-        self._pli_lib = []
+class FS(object):
+
+    def __init__(self):
         pass
 
-    def _getSrcIncDef(self):
-        src_l = []
-        src_s = set()
-        cpp_l = []
-        cpp_s = set()
-        inc_s = set()
-        def_m = {}
+    def getFiles(self, cfg : FSConfig=None) -> List[str]:
+        raise NotImplementedError("getFiles in %s" % str(type(self)))
+    
+    def getIncs(self, cfg : FSConfig=None) -> List[str]:
+        raise NotImplementedError("getIncs in %s" % str(type(self)))
 
-        for fs in self._filesets:
-            files = fs.getFiles(self.fs_cfg)
-            src_l.extend(files)
-
-            incs = fs.getIncs(self.fs_cfg)
-            inc_s.update(incs)
-
-            defs = fs.getDefs(self.fs_cfg)
-            def_m.update(defs)
-
-        return (src_l, cpp_l, inc_s, def_m)
+    def getDefs(self, cfg : FSConfig=None) -> Dict[str,str]:
+        raise NotImplementedError("getDefs in %s" % str(type(self)))

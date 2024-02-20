@@ -21,13 +21,14 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimMti(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "systemVerilogSource", "verilogSource"}, {}))
         pass
 
     async def build(self):
@@ -163,6 +164,8 @@ class SimMti(SimVlogBase):
         cmd.append('top')
 
         for dpi in args.dpi_libs:
+            if dpi.endswith(".so"):
+                dpi = dpi[:-3]
             cmd.extend(["-sv_lib", dpi])
 
         for pa in args.plusargs:
@@ -174,7 +177,7 @@ class SimMti(SimVlogBase):
             res = subprocess.run(
                 cmd,
                 cwd=args.rundir,
-                env=self.env,
+                env=args.env,
                 stderr=subprocess.STDOUT,
                 stdout=log)
             

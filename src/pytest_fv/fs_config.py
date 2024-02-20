@@ -1,5 +1,5 @@
 #****************************************************************************
-#* sim_vlog_base.py
+#* fs_config.py
 #*
 #* Copyright 2023 Matthew Ballance and Contributors
 #*
@@ -19,34 +19,23 @@
 #*     Author: 
 #*
 #****************************************************************************
-import os
-from pytest_fv import HdlSim
-from pytest_fv.fs_config import FSConfig
+from .fusesoc import FuseSoc
 
-class SimVlogBase(HdlSim):
+class FSConfig(object):
 
-    def __init__(self, builddir, fs_config : FSConfig):
-        super().__init__(builddir, fs_config)
-        self._dpi_lib = []
-        self._pli_lib = []
-        pass
+    def __init__(self, types, flags):
+        self._fs = None
+        self.types = types.copy()
+        self.flags = flags.copy()
 
-    def _getSrcIncDef(self):
-        src_l = []
-        src_s = set()
-        cpp_l = []
-        cpp_s = set()
-        inc_s = set()
-        def_m = {}
+    @property
+    def fs(self):
+        return self._fs
+    
+    @fs.setter
+    def fs(self, f):
+        self._fs = f
 
-        for fs in self._filesets:
-            files = fs.getFiles(self.fs_cfg)
-            src_l.extend(files)
 
-            incs = fs.getIncs(self.fs_cfg)
-            inc_s.update(incs)
 
-            defs = fs.getDefs(self.fs_cfg)
-            def_m.update(defs)
 
-        return (src_l, cpp_l, inc_s, def_m)

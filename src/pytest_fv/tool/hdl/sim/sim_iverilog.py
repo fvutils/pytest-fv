@@ -22,14 +22,16 @@
 import os
 import subprocess
 from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv.fs_config import FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimIVerilog(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "verilogSource", "systemVerilogSource"}, {}))
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
@@ -64,6 +66,9 @@ class SimIVerilog(SimVlogBase):
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
 
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
             log.write("** Compile\n")
@@ -81,22 +86,28 @@ class SimIVerilog(SimVlogBase):
         if len(cpp_l) > 0:
             print("TODO: need to compile DPI")
 
-    def run(self, run_args : HdlSim.RunArgs):
+    async def run(self, run_args : HdlSim.RunArgs):
         cmd = [ 'vvp' ]
+
+        for pli in run_args.pli_libs:
+            cmd.extend(['-m', pli])
 
         cmd.append(os.path.join(self.builddir, 'simv.vvp'))
 
-        logfile = run_args.logfile
+        logfile = run_args.run_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(run_args.rundir, logfile)
 
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))
-            log.write("** CWD: %s\n" % run_args._rundir)
+            log.write("** CWD: %s\n" % run_args.rundir)
             log.flush()
             res = subprocess.run(
                 cmd,
-                cwd=run_args._rundir,
+                cwd=run_args.rundir,
                 env=run_args.env,
                 stderr=subprocess.STDOUT,
                 stdout=log)

@@ -21,15 +21,17 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimVerilator(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig([
+            "verilogSource", "systemVerilogSource"
+        ], {}))
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
@@ -55,6 +57,19 @@ class SimVerilator(SimVlogBase):
         for vsrc in src_l:
             cmd.append(vsrc)
 
+        for dpi in self.dpi_libs:
+            dir = os.path.dirname(dpi)
+            lib = os.path.basename(dpi)
+
+            if lib.startswith("lib"):
+                lib = lib[3:]
+            if lib.endswith(".so"):
+                lib = lib[:-3]
+
+            cmd.append("-LDFLAGS")
+            cmd.append("-L%s -Wl,-rpath,%s -l%s" % (dir, dir, lib))
+
+        cmd.extend(["-LDFLAGS", "-rdynamic"])
 
         logfile = self.build_logfile
         if not os.path.isabs(logfile):
@@ -77,7 +92,7 @@ class SimVerilator(SimVlogBase):
         if len(cpp_l) > 0:
             print("TODO: need to compile DPI")
 
-    def run(self, run_args : HdlSim.RunArgs):
+    async def run(self, run_args : HdlSim.RunArgs):
         cmd = [ os.path.join(self.builddir, "obj_dir", "simv") ]
 
         logfile = run_args.run_logfile
@@ -101,4 +116,4 @@ class SimVerilator(SimVlogBase):
         pass
 
 
-ToolRgy.register(ToolKind.Sim, "vl", SimVerilator)
+ToolRgy.register(ToolKind.Sim, "vlt", SimVerilator)
