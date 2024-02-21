@@ -59,7 +59,7 @@ class FSVlnv(FS):
                     if path not in src_s:
                         src_s.add(path)
                         src_l.append(path)
-        pass
+        return []
     
     def getIncs(self, cfg : FSConfig=None) -> List[str]:
         pass

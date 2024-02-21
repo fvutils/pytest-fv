@@ -19,7 +19,9 @@
 #*     Author: 
 #*
 #****************************************************************************
+import asyncio
 from pytest_fv import DirConfig
+from pytest_fv.impl.path_src_ivpm import PathSrcIvpm
 from typing import List, Dict
 from .phase_compound import PhaseCompound
 from .fusesoc import FuseSoc
@@ -27,10 +29,20 @@ from .fs import FS
 
 class Flow(PhaseCompound):
 
-    def __init__(self, dirconfig : DirConfig):
+    def __init__(self, 
+                 dirconfig : DirConfig,
+                 pathsrc=None):
         super().__init__("")
         self.dirconfig = dirconfig
         self.fs = FuseSoc()
+
+        if pathsrc is None:
+            pathsrc = PathSrcIvpm(dirconfig.test_srcdir())
+        
+        for path in pathsrc.getPaths("lib-dirs"):
+            print("Add-path %s" % path)
+            self.fs.add_library(path)
+
         self._tool_m = {}
         self._ext_m = {}
 
@@ -51,6 +63,18 @@ class Flow(PhaseCompound):
             self._tool_m[tool].addFileset(fs)
         else:
             raise Exception("No tool \"%s\" is registered" % tool)
+        
+    def run_all(self):
+        loop = None
+
+        try:
+            loop = asyncio.get_running_loop()
+        except Exception:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        loop.run_until_complete(self.run())
+
 
 
 
