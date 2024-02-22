@@ -34,3 +34,6 @@ class FlowSim(Flow):
         self.addTool(self.sim, "sim")
         self.addTaskToPhase("build.main", self.sim.mkBuildTask())
 
+        # Connect the simulator config to FuseSoC
+        self.sim.fs_cfg.init(self.fs)
+

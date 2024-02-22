@@ -19,6 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
+import os
 from typing import List,Set,Dict
 from .fs import FS
 from .fs_config import FSConfig
@@ -33,37 +34,58 @@ class FSVlnv(FS):
         self.vlnv = vlnv
         self.types = set() if types is None else types
         self.flags = set() if flags is None else flags
-    
-    def getFiles(self, cfg : FSConfig=None) -> List[str]:
-        deps = []
 
+        self._loaded = False
+        self._incs = []
+        self._files = []
+        self._defs = {}
+
+    def _loadFiles(self, cfg : FSConfig):
+        src_s = set()
+        inc_s = set()
         file_flags = {'is_toplevel': True}
 
-#        if flags is not None:
-#            file_flags.update(flags)
+        if cfg.flags is not None:
+            file_flags.update(cfg.flags)
+
+        deps = cfg.fs.getFiles(self.vlnv, file_flags)
 
         for dep in deps:
             d_files = dep.get_files(file_flags)
 
             for f in d_files:
                 print("f: %s" % str(f))
-                if file_type is None or f['file_type'] in file_type:
+                if cfg.types is None or f['file_type'] in cfg.types:
                     if 'include_path' in f.keys():
                         incdir = os.path.join(dep.core_root, f['include_path'])
-                        inc_s.add(incdir)
+                        if incdir not in inc_s:
+                            self._incs.append(incdir)
+                            inc_s.add(incdir)
                     else:
                         incdir = os.path.join(dep.core_root, os.path.dirname(f['name']))
-                    inc_s.add(incdir)
+                        if incdir not in inc_s:
+                            self._incs.append(incdir)
+                            inc_s.add(incdir)
                     path = os.path.join(dep.core_root, f['name'])
 
                     if path not in src_s:
                         src_s.add(path)
-                        src_l.append(path)
-        return []
+                        self._files.append(path)
+        self._loaded = True
+
+    
+    def getFiles(self, cfg : FSConfig=None) -> List[str]:
+        if not self._loaded:
+            self._loadFiles(cfg)
+        return self._files
     
     def getIncs(self, cfg : FSConfig=None) -> List[str]:
-        pass
+        if not self._loaded:
+            self._loadFiles(cfg)
+        return self._incs
 
     def getDefs(self, cfg : FSConfig=None) -> Dict[str,str]:
-        pass
+        if not self._loaded:
+            self._loadFiles(cfg)
+        return self._defs
 

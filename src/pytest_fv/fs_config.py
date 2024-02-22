@@ -36,6 +36,8 @@ class FSConfig(object):
     def fs(self, f):
         self._fs = f
 
+    def init(self, fs):
+        self._fs = fs
 
 
 

@@ -28,7 +28,8 @@ class SimMti(SimVlogBase):
 
     def __init__(self, builddir):
         super().__init__(builddir, FSConfig({
-            "systemVerilogSource", "verilogSource"}, {}))
+            "systemVerilogSource", "verilogSource"}, {
+            "sv-uvm" : True}))
         pass
 
     async def build(self):
@@ -39,7 +40,7 @@ class SimMti(SimVlogBase):
         ]
 
 #        if self.hasFlag("sv-uvm"):
-#            cmd.extend(["-L", "uvm"])
+        cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
             cmd.append('+incdir+%s' % inc)

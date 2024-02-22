@@ -44,10 +44,14 @@ class PathSrcIvpm(PathSrc):
 
         for i,pkg in enumerate(self.pkg_info):
             section = "project" if i == 0 else "export"
-            if section in pkg.paths:
+            print("Section: %s %s %s" % (section, pkg.name, str(pkg.paths.keys())))
+            if section in pkg.paths.keys():
+                print("  Kind: %s %s" % (kind, str(pkg.paths[section].keys())))
                 if kind in pkg.paths[section].keys():
+                    print("  Paths: %s" % str(pkg.paths[section][kind]))
                     ret.extend(pkg.paths[section][kind])
         ret.extend(self.pkg_info_rgy.getPaths(kind))
 
+        print("ret: %s" % str(ret))
         return ret
 
