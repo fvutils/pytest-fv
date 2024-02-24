@@ -94,6 +94,9 @@ class SimIVerilog(SimVlogBase):
 
         cmd.append(os.path.join(self.builddir, 'simv.vvp'))
 
+        for pl in run_args.plusargs:
+            cmd.append("+%s" % pl)
+
         logfile = run_args.run_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(run_args.rundir, logfile)

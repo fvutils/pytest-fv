@@ -11,8 +11,9 @@ class DirConfig(object):
         return os.path.join(self._rundir, name)
     
     def rundir(self, seed=None):
+        print("module: %s" % str(self.request.module.__name__))
         return os.path.join(self._rundir, 
-                            self.request.node.name)
+                            self.request.module.__name__ + "_" + self.request.node.name)
     
     def test_srcdir(self):
         return self.request.path

@@ -169,9 +169,11 @@ class SimMti(SimVlogBase):
                 dpi = dpi[:-3]
             cmd.extend(["-sv_lib", dpi])
 
+        for pli in args.pli_libs:
+            cmd.extend(["-pli", pli])
+
         for pa in args.plusargs:
             cmd.append("+%s" % pa)
-
 
         with open(logfile, m) as log:
             m = "a"
