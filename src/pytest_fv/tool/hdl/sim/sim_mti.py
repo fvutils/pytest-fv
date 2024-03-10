@@ -136,6 +136,9 @@ class SimMti(SimVlogBase):
                 raise Exception("Failed to map library")
 
         cmd = [ 'vsim', '-batch' ]
+
+#        cmd.extend(['-valgrind', '--tool=memcheck'])
+
         cmd.extend(['-do', 'run.tcl'])
 
         with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
