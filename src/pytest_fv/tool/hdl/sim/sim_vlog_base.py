@@ -39,6 +39,9 @@ class SimVlogBase(HdlSim):
         inc_s = set()
         def_m = {}
 
+        for inc in self._incdirs:
+            inc_s.add(inc)
+
         for fs in self._filesets:
             files = fs.getFiles(self.fs_cfg)
             src_l.extend(files)

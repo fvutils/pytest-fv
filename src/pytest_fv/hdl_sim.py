@@ -67,6 +67,10 @@ class HdlSim(object):
                 pathsep = ";" if platform.system() == "Windows" else ":"
                 self.env[var] = val + pathsep + self.env[var]
 
+    def addIncdir(self, dir):
+        if dir not in self._incdirs:
+            self._incdirs.append(dir)
+
     def __init__(self, builddir, fs_cfg : FSConfig):
 #        self._files = []
 #        self._incdirs = []
@@ -82,6 +86,7 @@ class HdlSim(object):
         self.builddir = builddir
         self._prefile_paths = []
         self._filesets : List[FS] = []
+        self._incdirs : List[str] = []
         self.top = set()
         self.build_logfile = "build.log"
 

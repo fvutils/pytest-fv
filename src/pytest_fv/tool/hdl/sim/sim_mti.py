@@ -142,6 +142,8 @@ class SimMti(SimVlogBase):
         cmd.extend(['-do', 'run.tcl'])
 
         with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
+            fp.write("puts $env(LD_LIBRARY_PATH)\n")
+            fp.write("puts $env(PYTHONPATH)\n")
             if args.debug:
                 fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
                 fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
