@@ -22,7 +22,7 @@
 import os
 import shutil
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
+from pytest_fv import HdlSim, ToolRgy, ToolKind, Env, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXsim(SimVlogBase):
@@ -128,6 +128,16 @@ class SimXsim(SimVlogBase):
                 os.path.join(args.rundir, "xsim.dir")
             )
 
+        which_xsim = shutil.which('xsim')
+        print("which_xsim: %s" % which_xsim)
+
+        vivado_bindir = os.path.dirname(which_xsim)
+        vivado_dir = os.path.dirname(vivado_bindir)
+        python_dir = os.path.join(vivado_dir, "tps/lnx64/python-3.8.3")
+        python_libdir = os.path.join(python_dir, "lib")
+
+        env = Env(self.env)
+        env.append_path("LD_LIBRARY_PATH", python_libdir)
 
         cmd = [ 'xsim' ]
         cmd.extend(['--onerror', 'quit'])
@@ -171,7 +181,7 @@ class SimXsim(SimVlogBase):
             res = subprocess.run(
                 cmd,
                 cwd=args.rundir,
-                env=self.env,
+                env=env.env,
                 stderr=subprocess.STDOUT,
                 stdout=log)
             
