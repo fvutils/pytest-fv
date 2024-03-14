@@ -22,23 +22,23 @@
 import os
 import shutil
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXsim(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig([
+            "verilogSource", "systemVerilogSource"], 
+            {"sv-uvm": True}))
         pass
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
-        cmd = [
-            'xvlog', "-sv"
-        ]
+        cmd = ['xvlog', "-sv" ] 
 
-        if self.hasFlag("sv-uvm"):
+        if "sv-uvm" in self.fs_cfg.flags.keys():
             cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
@@ -92,6 +92,16 @@ class SimXsim(SimVlogBase):
         if self.debug:
             cmd.extend(['-debug', 'all'])
 
+        if len(self.dpi_libs):
+            cmd.append("--dpi_absolute")
+        for dpi in self.dpi_libs:
+            dpi_file = os.path.basename(dpi)
+            dpi_dir = os.path.dirname(dpi)
+#            if dpi_file.endswith(".so"):
+#                dpi_file = dpi_file[:-3]
+            cmd.extend(["-sv_root", dpi_dir, "-sv_lib", dpi_file])
+#            cmd.extend(["-sv_lib", dpi])
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
             log.write("** Elab\n")
@@ -105,7 +115,7 @@ class SimXsim(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
 
         # Manage clean-up and initialization of run directory
         if args.rundir != self.builddir:
@@ -148,6 +158,7 @@ class SimXsim(SimVlogBase):
             fp.write("exit\n")
 
         cmd.append('top')
+
 
         for pa in args.plusargs:
             cmd.extend(['--testplusarg', pa])
