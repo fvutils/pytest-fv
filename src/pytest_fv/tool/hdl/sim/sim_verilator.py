@@ -40,6 +40,8 @@ class SimVerilator(SimVlogBase):
 
         for inc in inc_s:
             cmd.append('+incdir+%s' % inc)
+        
+        cmd.append("-Wno-fatal")
 
         for key,val in def_m.items():
             if val is None or val == "":
@@ -61,13 +63,17 @@ class SimVerilator(SimVlogBase):
             dir = os.path.dirname(dpi)
             lib = os.path.basename(dpi)
 
-            if lib.startswith("lib"):
-                lib = lib[3:]
-            if lib.endswith(".so"):
-                lib = lib[:-3]
+            if lib.startswith("lib") and lib.endswith(".so"):
+                if lib.startswith("lib"):
+                    lib = lib[3:]
+                if lib.endswith(".so"):
+                    lib = lib[:-3]
 
-            cmd.append("-LDFLAGS")
-            cmd.append("-L%s -Wl,-rpath,%s -l%s" % (dir, dir, lib))
+                cmd.append("-LDFLAGS")
+                cmd.append("-L%s -Wl,-rpath,%s -l%s" % (dir, dir, lib))
+            else:
+                cmd.append("-LDFLAGS")
+                cmd.append("-L%s -Wl,-rpath,%s %s" % (dir, dir, dpi))
 
         cmd.extend(["-LDFLAGS", "-rdynamic"])
 

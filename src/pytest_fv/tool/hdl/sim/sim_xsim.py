@@ -22,24 +22,25 @@
 import os
 import shutil
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXsim(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "systemVerilogSource", "verilogSource"}, {
+            "sv-uvm": True}))
         pass
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
             'xvlog', "-sv"
         ]
 
-        if self.hasFlag("sv-uvm"):
-            cmd.extend(["-L", "uvm"])
+        cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
             cmd.append('-i')
