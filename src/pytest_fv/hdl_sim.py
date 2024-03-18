@@ -21,6 +21,7 @@
 #****************************************************************************
 import os
 import pytest
+import platform
 from typing import List,Set,Dict
 from .fs import FS
 from .fs_config import FSConfig
@@ -48,6 +49,28 @@ class HdlSim(object):
                 self.env = os.environ.copy()
             self.env[var] = val
 
+        def append_pathenv(self, var, val):
+            if self.env is None:
+                self.env = os.environ.copy()
+            if var not in self.env.keys():
+                self.env[var] = val
+            else:
+                pathsep = ";" if platform.system() == "Windows" else ":"
+                self.env[var] = self.env[var] + pathsep + val
+
+        def prepend_pathenv(self, var, val):
+            if self.env is None:
+                self.env = os.environ.copy()
+            if var not in self.env.keys():
+                self.env[var] = val
+            else:
+                pathsep = ";" if platform.system() == "Windows" else ":"
+                self.env[var] = val + pathsep + self.env[var]
+
+    def addIncdir(self, dir):
+        if dir not in self._incdirs:
+            self._incdirs.append(dir)
+
     def __init__(self, builddir, fs_cfg : FSConfig):
 #        self._files = []
 #        self._incdirs = []
@@ -63,6 +86,7 @@ class HdlSim(object):
         self.builddir = builddir
         self._prefile_paths = []
         self._filesets : List[FS] = []
+        self._incdirs : List[str] = []
         self.top = set()
         self.build_logfile = "build.log"
 
@@ -70,13 +94,69 @@ class HdlSim(object):
         self.run_logfile = "run.log"
         self.dpi_libs = []
         self.pli_libs = []
+        self.lib_dirs = []
         self.plusargs = []
         self.args = []
+
+    def addLibDirs(self, dirs):
+        new = ""
+        pathsep = ";" if platform.system() == "Windows" else ":"
+        if platform.system() == "Windows":
+            libpath_var = "PATH"
+        elif platform.system() == "Darwin":
+            libpath_var = "DYLD_LIBRARY_PATH"
+        else:
+            libpath_var = "LD_LIBRARY_PATH"
+
+        for d in dirs:
+            if d not in self.lib_dirs:
+                self.lib_dirs.append(d)
+                if len(new) == 0:
+                    new = d
+                else:
+                    new = new + pathsep + d
+
+        
+        if self.env is None:
+            self.env = os.environ.copy()
+        if libpath_var not in self.env.keys():
+            self.env[libpath_var] = new
+        else:
+            self.env[libpath_var] = new + pathsep + self.env[libpath_var]
+
+    def addLibDir(self, d):
+        if d not in self.lib_dirs:
+            self.lib_dirs.append(d)
+            pathsep = ";" if platform.system() == "Windows" else ":"
+
+            if platform.system() == "Windows":
+                libpath_var = "PATH"
+            elif platform.system() == "Darwin":
+                libpath_var = "DYLD_LIBRARY_PATH"
+            else:
+                libpath_var = "LD_LIBRARY_PATH"
+
+            if self.env is None:
+                self.env = os.environ.copy()
+            if libpath_var not in self.env.keys():
+                self.env[libpath_var] = d
+            else:
+                self.env[libpath_var] = d + pathsep + self.env[libpath_var]
 
     def setenv(self, var, val):
         if self.env is None:
             self.env = os.environ.copy()
         self.env[var] = val
+    
+    def append_pathenv(self, var, val):
+        if self.env is None:
+            self.env = os.environ.copy()
+        pathsep = ";" if platform.system() == "Windows" else ":"
+
+        if var not in self.env.keys():
+            self.env[var] = val
+        else:
+            self.env[var] = val + pathsep + self.env[var]
 
     def addPreFilePath(self, path):
         self._prefile_paths.append(path)

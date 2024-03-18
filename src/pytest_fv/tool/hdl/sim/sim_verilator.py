@@ -105,6 +105,9 @@ class SimVerilator(SimVlogBase):
         if not os.path.isabs(logfile):
             logfile = os.path.join(run_args.rundir, logfile)
 
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))
             log.write("** CWD: %s\n" % run_args.rundir)

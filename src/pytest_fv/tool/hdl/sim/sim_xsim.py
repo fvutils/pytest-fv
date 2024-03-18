@@ -22,25 +22,24 @@
 import os
 import shutil
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
+from pytest_fv import HdlSim, ToolRgy, ToolKind, Env, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXsim(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir, FSConfig({
-            "systemVerilogSource", "verilogSource"}, {
-            "sv-uvm": True}))
+        super().__init__(builddir, FSConfig([
+            "verilogSource", "systemVerilogSource"], 
+            {"sv-uvm": True}))
         pass
 
     async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
-        cmd = [
-            'xvlog', "-sv"
-        ]
+        cmd = ['xvlog', "-sv" ] 
 
-        cmd.extend(["-L", "uvm"])
+        if "sv-uvm" in self.fs_cfg.flags.keys():
+            cmd.extend(["-L", "uvm"])
 
         for inc in inc_s:
             cmd.append('-i')
@@ -93,6 +92,16 @@ class SimXsim(SimVlogBase):
         if self.debug:
             cmd.extend(['-debug', 'all'])
 
+        if len(self.dpi_libs):
+            cmd.append("--dpi_absolute")
+        for dpi in self.dpi_libs:
+            dpi_file = os.path.basename(dpi)
+            dpi_dir = os.path.dirname(dpi)
+#            if dpi_file.endswith(".so"):
+#                dpi_file = dpi_file[:-3]
+            cmd.extend(["-sv_root", dpi_dir, "-sv_lib", dpi_file])
+#            cmd.extend(["-sv_lib", dpi])
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
             log.write("** Elab\n")
@@ -106,7 +115,7 @@ class SimXsim(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
 
         # Manage clean-up and initialization of run directory
         if args.rundir != self.builddir:
@@ -119,6 +128,16 @@ class SimXsim(SimVlogBase):
                 os.path.join(args.rundir, "xsim.dir")
             )
 
+        which_xsim = shutil.which('xsim')
+        print("which_xsim: %s" % which_xsim)
+
+        vivado_bindir = os.path.dirname(which_xsim)
+        vivado_dir = os.path.dirname(vivado_bindir)
+        python_dir = os.path.join(vivado_dir, "tps/lnx64/python-3.8.3")
+        python_libdir = os.path.join(python_dir, "lib")
+
+        env = Env(self.env)
+        env.append_path("LD_LIBRARY_PATH", python_libdir)
 
         cmd = [ 'xsim' ]
         cmd.extend(['--onerror', 'quit'])
@@ -150,6 +169,7 @@ class SimXsim(SimVlogBase):
 
         cmd.append('top')
 
+
         for pa in args.plusargs:
             cmd.extend(['--testplusarg', pa])
 
@@ -161,7 +181,7 @@ class SimXsim(SimVlogBase):
             res = subprocess.run(
                 cmd,
                 cwd=args.rundir,
-                env=self.env,
+                env=env.env,
                 stderr=subprocess.STDOUT,
                 stdout=log)
             

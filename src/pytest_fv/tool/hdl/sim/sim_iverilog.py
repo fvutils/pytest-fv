@@ -28,14 +28,13 @@ from .sim_vlog_base import SimVlogBase
 class SimIVerilog(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir, FSConfig({
-            "verilogSource", "systemVerilogSource"}, {}))
+        super().__init__(builddir, FSConfig({"verilogSource"}, {}))
 
     async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
-            'iverilog', "-g2001"
+            'iverilog', "-g2012"
         ]
 
         for inc in inc_s:
