@@ -62,6 +62,9 @@ class SimXsim(SimVlogBase):
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
 
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
             log.write("** Compile\n")
