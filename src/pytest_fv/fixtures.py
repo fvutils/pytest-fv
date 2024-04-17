@@ -19,7 +19,18 @@
 #*     Author: 
 #*
 #****************************************************************************
+import pytest
 
 from .dirconfig import dirconfig
+
+@pytest.fixture
+def project_info(dirconfig):
+    from .project_info import ProjectInfo
+    return ProjectInfo.inst()
+
+@pytest.fixture
+def flow_sim(project_info):
+    pass
+
 
 

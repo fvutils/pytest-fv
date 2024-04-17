@@ -23,10 +23,6 @@ import pytest
 import os
 import sys
 
-@pytest.fixture
-def project_info():
-    return ProjectInfo.inst()
-
 class ProjectInfo(object):
 
     def __init__(self):

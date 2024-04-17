@@ -1,18 +1,25 @@
 
-import os, stat
+import os
+import sys
 from setuptools import setup, find_namespace_packages
 
 version="0.0.1"
 
-if "BUILD_NUM" in os.environ.keys():
-    version += "." + os.environ["BUILD_NUM"]
+proj_dir = os.path.dirname(os.path.abspath(__file__))
 
+try:
+    sys.path.insert(0, os.path.join(proj_dir, "src/pytest_fv"))
+    from __build_num__ import BUILD_NUM
+    version += ".%s" % str(BUILD_NUM)
+except ImportError as e:
+    print("No build version: %s" % str(e))
+
+    
 setup(
   name = "pytest-fv",
   version = version,
   packages=find_namespace_packages(where='src'),
   package_dir = {'' : 'src'},
-#  package_data = {'ivpm': ['scripts/*', 'templates/*', 'share/*', 'share/cmake/*']},
   author = "Matthew Ballance",
   author_email = "matt.ballance@gmail.com",
   description = (""),
@@ -30,7 +37,8 @@ setup(
     'setuptools_scm',
   ],
   install_requires=[
-      'fusesoc'
+      'fusesoc',
+      'pytest'
   ]
 )
 
