@@ -19,6 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
+import inspect
 from .phase import Phase
 
 class PhaseCompound(Phase):
@@ -46,6 +47,7 @@ class PhaseCompound(Phase):
         self._subphase_m[phase.name] = phase
 
     def addTaskToPhase(self, phase, task):
+        from .task_delegator import TaskDelegator
         phase_elem_l = phase.split(".")
 
         curr_phase = self
@@ -58,6 +60,12 @@ class PhaseCompound(Phase):
             else:
                 raise Exception("Failed to find subphase %s ; have %s" % (
                     name, str(curr_phase._subphase_m.keys())))
+        if not hasattr(task, "run"):
+            if inspect.iscoroutine(task):
+                task = TaskDelegator(str(task), task)
+            else:
+                raise Exception("No 'run' attribute and not a coroutine")
         curr_phase.addTask(task)
+
 
 
