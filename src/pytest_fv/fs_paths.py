@@ -36,8 +36,10 @@ class FSPaths(FS):
         self.defs = {} if defs is None else defs.copy()
 
     def getFiles(self, cfg : FSConfig=None) -> List[str]:
-        print("getFiles: stype=%s stypes=%s" % (self.stype, str(cfg.types)))
-        if self.stype in cfg.types:
+        print("getFiles: stype=%s stypes=%s" % (
+            self.stype, 
+            (str(cfg.types) if cfg is not None else "all")))
+        if cfg is None or self.stype in cfg.types:
             return self.paths
         else:
             return []

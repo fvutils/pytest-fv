@@ -16,7 +16,15 @@ class DirConfig(object):
                             self.request.module.__name__ + "_" + self.request.node.name)
     
     def test_srcdir(self):
-        return self.request.path
+        return os.path.dirname(self.request.path)
+    
+    def mkBuildDirFile(self, path, content):
+        fullpath = os.path.join(self.builddir(), path)
+        if not os.path.isdir(os.path.dirname(fullpath)):
+            os.makedirs(os.path.dirname(fullpath))
+        with open(fullpath, "w") as fp:
+            fp.write(content)
+        return fullpath
 
 
 @pytest.fixture

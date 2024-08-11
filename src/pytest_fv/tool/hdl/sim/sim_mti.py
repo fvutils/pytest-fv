@@ -92,7 +92,7 @@ class SimMti(SimVlogBase):
         for top in self.top:
             cmd.append(top)
 
-        cmd.extend(['-o', 'top', '-timescale', '1ns/1ps'])
+        cmd.extend(['-o', '__simv', '-timescale', '1ns/1ps'])
         if self.debug:
             cmd.append('-debug')
 
@@ -167,7 +167,7 @@ class SimMti(SimVlogBase):
 
             fp.write("quit -f\n")
 
-        cmd.append('top')
+        cmd.append('__simv')
 
         for dpi in args.dpi_libs:
             if dpi.endswith(".so"):
