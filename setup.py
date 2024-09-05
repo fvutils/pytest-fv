@@ -22,8 +22,9 @@ setup(
   package_dir = {'' : 'src'},
   author = "Matthew Ballance",
   author_email = "matt.ballance@gmail.com",
-  description = (""),
+  description = "pytest extensions to support running functional-verification jobs",
   long_description="""
+    PyTest extensions to support running functional-verification jobs
   """,
   license = "Apache 2.0",
   keywords = ["SystemVerilog", "Verilog", "RTL", "Coverage"],
