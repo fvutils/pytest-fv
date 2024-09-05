@@ -3,9 +3,17 @@ import pytest
 
 class DirConfig(object):
 
-    def __init__(self, request : pytest.FixtureRequest):
+    def __init__(self, 
+                 request : pytest.FixtureRequest,
+                 pytestconfig : pytest.Config):
+        from .fv_config import FvConfig
+        self._cfg = FvConfig.inst(pytestconfig)
         self.request = request
-        self._rundir = os.path.join(os.getcwd(), "rundir")
+        self._rundir = os.path.join(self._cfg.rootdir, "rundir")
+
+    @property
+    def config(self) -> 'pytest_fv.FvConfig':
+        return self._cfg
 
     def builddir(self, name="build"):
         return os.path.join(self._rundir, name)
@@ -28,5 +36,5 @@ class DirConfig(object):
 
 
 @pytest.fixture
-def dirconfig(request):
-    return DirConfig(request)
+def dirconfig(request, pytestconfig):
+    return DirConfig(request, pytestconfig)

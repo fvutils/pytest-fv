@@ -1,6 +1,6 @@
 
 package:
-  name: pytest-hdl
+  name: pytest-fv
 
   #  setup-deps:
   #- ninja

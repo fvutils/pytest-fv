@@ -24,7 +24,7 @@ import pytest
 import configparser
 
 class FvConfig(object):
-    DEFAULT_TOOL_HDLSIM = "xsm"
+    DEFAULT_TOOL_HDLSIM = "vlt"
 
     _inst = None
 
@@ -35,15 +35,21 @@ class FvConfig(object):
             self.ini = configparser.ConfigParser()
             self.ini.read(pytestconfig.inipath)
             self._have_ini = True
+            self._rootdir = pytestconfig.rootpath
         else:
+            self._rootdir = os.getcwd()
             self.ini = {}
 
         pass
 
+    @property
+    def rootdir(self):
+        return self._rootdir
+
     def _pytest_hdl(self):
-        if "pytest-fv" not in self.ini.keys():
-            self.ini["pytest-fv"] = {}
-        return self.ini["pytest-fv"]
+        if "pytest.fv" not in self.ini.keys():
+            self.ini["pytest.fv"] = {}
+        return self.ini["pytest.fv"]
 
     def getHdlSim(self):
         pytest_hdl = self._pytest_hdl()
