@@ -21,13 +21,15 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimVCS(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "systemVerilogSource", "verilogSource"}, {
+                "sv-uvm": True}))
         pass
 
     def build(self):
