@@ -32,7 +32,7 @@ class SimVCS(SimVlogBase):
                 "sv-uvm": True}))
         pass
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         logfile = self.build_logfile
@@ -42,7 +42,8 @@ class SimVCS(SimVlogBase):
         with open(logfile, "w") as log:
             pass
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd = ['vlogan', "-sverilog", '-ntb_opts', 'uvm']
             cmd.append("-timescale=1ns/1ps")
 
@@ -62,7 +63,8 @@ class SimVCS(SimVlogBase):
             'vlogan', "-sverilog"
         ]
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd.extend(["-ntb_opts", "uvm"])
 
         for inc in inc_s:
@@ -74,7 +76,7 @@ class SimVCS(SimVlogBase):
             else:
                 cmd.append("+define+%s=%s" % (key, val))
 
-        if len(src_l) == 0:
+        if len(src_l) == 0 and len(self._prefile_paths) == 0:
             raise Exception("No source files specified")
 
         cmd.append("-timescale=1ns/1ps")
@@ -82,9 +84,11 @@ class SimVCS(SimVlogBase):
         if self.debug:
             cmd.extend(['-kdb', '-debug_access'])
 
-        for vsrc in src_l:
+        for vsrc in self._prefile_paths:
             cmd.append(vsrc)
 
+        for vsrc in src_l:
+            cmd.append(vsrc)
 
         with open(logfile, "a") as log:
             log.write("** Compile: %s\n" % str(cmd))
