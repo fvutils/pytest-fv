@@ -109,7 +109,8 @@ class SimVCS(SimVlogBase):
 
         cmd.append("-timescale=1ns/1ps")
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd.extend(["-ntb_opts", "uvm"])
 
         if len(self.top) == 0:
@@ -134,7 +135,7 @@ class SimVCS(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
         cmd = [ os.path.join(self.builddir, "simv") ] # '-batch' ]
         cmd.extend(['-ucli', '-i', 'run.tcl'])
 
