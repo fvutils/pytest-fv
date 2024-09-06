@@ -38,6 +38,9 @@ class SimVCS(SimVlogBase):
         logfile = self.build_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
+
+        if not os.path.isdir(os.dirname(logfile)):
+            os.makedirs(os.dirname(logfile))
             
         with open(logfile, "w") as log:
             pass
@@ -55,7 +58,9 @@ class SimVCS(SimVlogBase):
                     cwd=self.builddir,
                     stderr=subprocess.STDOUT,
                     stdout=log)
-            
+
+                log.write("return-code: %d\n" % res.returncode)
+
                 if res.returncode != 0:
                     raise Exception("UVM compilation failed")
 
