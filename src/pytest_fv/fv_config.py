@@ -56,8 +56,8 @@ class FvConfig(object):
 
         if "PYTEST_FV_HDLSIM" in os.environ.keys() and os.environ["PYTEST_FV_HDLSIM"] != "":
             return os.environ["PYTEST_FV_HDLSIM"]
-        elif "tool.hdlsim" in pytest_hdl.keys():
-            return pytest_hdl["tool.hdlsim"]
+        elif "hdlsim" in pytest_hdl.keys():
+            return pytest_hdl["hdlsim"]
         else:
             return FvConfig.DEFAULT_TOOL_HDLSIM
     
