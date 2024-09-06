@@ -131,7 +131,7 @@ class SimXcelium(SimVlogBase):
             os.makedirs(args.rundir)
 
         if not os.path.exists(os.path.join(args.rundir, "xcelium.d")):
-            os.link(
+            os.symlink(
                 os.path.join(self.builddir, "xcelium.d"),
                 os.path.join(args.rundir, "xcelium.d"))
         
