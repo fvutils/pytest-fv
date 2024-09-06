@@ -129,6 +129,11 @@ class SimXcelium(SimVlogBase):
 
         if not os.path.isdir(args.rundir):
             os.makedirs(args.rundir)
+
+        if not os.path.exists(os.path.join(args.rundir, "xcelium.d")):
+            os.link(
+                os.path.join(self.builddir, "xcelium.d"),
+                os.path.join(args.rundir, "xcelium.d"))
         
         for dpi in args.dpi_libs:
             cmd.extend(["-sv_lib", dpi])
