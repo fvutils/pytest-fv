@@ -142,9 +142,12 @@ class SimVCS(SimVlogBase):
 
     async def run(self, args : HdlSim.RunArgs):
         cmd = [ os.path.join(self.builddir, "simv") ] # '-batch' ]
+
+        if not os.path.isdir(args.rundir):
+            os.makedirs(args.rundir)
         cmd.extend(['-ucli', '-i', 'run.tcl'])
 
-        with open("run.tcl", "w") as fp:
+        with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
             # if args.debug:
             #     fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
             #     fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
