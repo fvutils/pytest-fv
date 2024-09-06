@@ -105,13 +105,13 @@ class SimXcelium(SimVlogBase):
         for top in self.top:
             cmd.append(top)
 
-        cmd.extend(['-snapshot', 'top', '-timescale', '1ns/1ps'])
+        cmd.extend(['-snapshot', 'top:snap', '-timescale', '1ns/1ps'])
 #        if self.debug:
 #            cmd.extend(['-debug', 'all'])
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
-            log.write("** Elab\n")
+            log.write("** Elab %s\n" % str(cmd))
             log.flush()
             res = subprocess.run(
                 cmd, 
@@ -157,7 +157,7 @@ class SimXcelium(SimVlogBase):
 
         #     fp.write("exit\n")
 
-        cmd.append('top')
+        cmd.append('top:snap')
 
         for pa in args.plusargs:
             cmd.append('+%s' % pa)
