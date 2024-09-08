@@ -38,6 +38,9 @@ class SimVerilator(SimVlogBase):
             'verilator', '--binary', '-sv', '-o', 'simv'
         ]
 
+        if self.debug:
+            cmd.append("--trace")
+
         for inc in inc_s:
             cmd.append('+incdir+%s' % inc)
         
@@ -111,7 +114,11 @@ class SimVerilator(SimVlogBase):
         if not os.path.isdir(os.path.dirname(logfile)):
             os.makedirs(os.path.dirname(logfile))
 
-        cmd.extend(run_args.plusargs)
+        if run_args.debug:
+            run_args.plusargs.append("debug")
+
+        for arg in run_args.plusargs:
+            cmd.append("+%s" % arg)
 
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))
