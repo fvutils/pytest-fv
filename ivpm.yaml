@@ -14,6 +14,10 @@ package:
       src: pypi
     - name: fusesoc
       src: pypi
+    # 0.9.0 version of simplesat fails to install
+    - name: simplesat
+      version: 0.8.2
+      src: pypi
 
   - name: default-dev
     deps:
@@ -21,6 +25,9 @@ package:
       src: pypi
     - name: fusesoc
       url: https://github.com/olofk/fusesoc.git
+    - name: simplesat
+      version: 0.8.2
+      src: pypi
     - name: cocotb
       url: https://github.com/cocotb/cocotb.git
 

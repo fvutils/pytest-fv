@@ -19,6 +19,7 @@
 #*     Author: 
 #*
 #****************************************************************************
+import os
 import subprocess
 from typing import Dict, List
 from .env import Env
@@ -45,6 +46,9 @@ class TaskCmd(Task):
             for e in self.env:
                 e.apply(env)
 
+        if self.cwd is not None and not os.path.isdir(self.cwd):
+            os.makedirs(self.cwd)
+
         res = subprocess.run(
             self.cmd,
             env=env.env,
@@ -53,6 +57,5 @@ class TaskCmd(Task):
         )
 
         if res.returncode != 0:
-            raise Exception("Command %s failed (%s)" % (
-                str(self.cmd), str(e)))
+            raise Exception("Command %s failed (%d)" % (str(self.cmd), res.returncode))
 
