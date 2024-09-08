@@ -35,6 +35,7 @@ class PathSrcIvpm(PathSrc):
 
         # Find the project
         project = find_project_root(test_srcdir)
+        print("project: %s" % project)
         self.pkg_info = load_project_package_info(project)
 
         self.pkg_info_rgy = PkgInfoRgy.inst()

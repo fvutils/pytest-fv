@@ -21,26 +21,32 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimVCS(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "systemVerilogSource", "verilogSource"}, {
+                "sv-uvm": True}))
         pass
 
-    def build(self):
+    async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         logfile = self.build_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
+
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
             
         with open(logfile, "w") as log:
             pass
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd = ['vlogan', "-sverilog", '-ntb_opts', 'uvm']
             cmd.append("-timescale=1ns/1ps")
 
@@ -52,7 +58,9 @@ class SimVCS(SimVlogBase):
                     cwd=self.builddir,
                     stderr=subprocess.STDOUT,
                     stdout=log)
-            
+
+                log.write("return-code: %d\n" % res.returncode)
+
                 if res.returncode != 0:
                     raise Exception("UVM compilation failed")
 
@@ -60,7 +68,8 @@ class SimVCS(SimVlogBase):
             'vlogan', "-sverilog"
         ]
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd.extend(["-ntb_opts", "uvm"])
 
         for inc in inc_s:
@@ -72,7 +81,7 @@ class SimVCS(SimVlogBase):
             else:
                 cmd.append("+define+%s=%s" % (key, val))
 
-        if len(src_l) == 0:
+        if len(src_l) == 0 and len(self._prefile_paths) == 0:
             raise Exception("No source files specified")
 
         cmd.append("-timescale=1ns/1ps")
@@ -80,9 +89,11 @@ class SimVCS(SimVlogBase):
         if self.debug:
             cmd.extend(['-kdb', '-debug_access'])
 
-        for vsrc in src_l:
+        for vsrc in self._prefile_paths:
             cmd.append(vsrc)
 
+        for vsrc in src_l:
+            cmd.append(vsrc)
 
         with open(logfile, "a") as log:
             log.write("** Compile: %s\n" % str(cmd))
@@ -103,7 +114,8 @@ class SimVCS(SimVlogBase):
 
         cmd.append("-timescale=1ns/1ps")
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             cmd.extend(["-ntb_opts", "uvm"])
 
         if len(self.top) == 0:
@@ -128,11 +140,14 @@ class SimVCS(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
         cmd = [ os.path.join(self.builddir, "simv") ] # '-batch' ]
+
+        if not os.path.isdir(args.rundir):
+            os.makedirs(args.rundir)
         cmd.extend(['-ucli', '-i', 'run.tcl'])
 
-        with open("run.tcl", "w") as fp:
+        with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
             # if args.debug:
             #     fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
             #     fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
@@ -162,6 +177,9 @@ class SimVCS(SimVlogBase):
         logfile = args.run_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(args.rundir, logfile)
+
+        if not os.path.isdir(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
 
         with open(logfile, "w") as log:
             log.write("** Command: %s\n" % str(cmd))

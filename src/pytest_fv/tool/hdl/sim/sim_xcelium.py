@@ -21,17 +21,19 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind
+from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXcelium(SimVlogBase):
 
     def __init__(self, builddir):
-        super().__init__(builddir)
+        super().__init__(builddir, FSConfig({
+            "systemVerilogSource", "verilogSource"}, {
+            "sv-uvm" : True}))
         self.xcm_home = None
         pass
 
-    def build(self):
+    async def build(self):
         self.init_xcm_home()
 
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
@@ -44,7 +46,8 @@ class SimXcelium(SimVlogBase):
         self.setenv("CADENCE_ENABLE_AVSREQ_44905_PHASE_1", "1")
         self.setenv("CADENCE_ENABLE_AVSREQ_63188_PHASE_1", "1")
 
-        if self.hasFlag("sv-uvm"):
+#        if self.hasFlag("sv-uvm"):
+        if True:
             uvm_home = os.path.join(self.xcm_home, "tools/methodology/UVM/CDNS-1.2")
             cmd.extend(["-incdir", os.path.join(uvm_home, "sv/src")])
             cmd.append(os.path.join(uvm_home, "sv/src/uvm_pkg.sv"))
@@ -62,8 +65,11 @@ class SimXcelium(SimVlogBase):
             else:
                 cmd.append("%s=%s" % (key, val))
 
-        if len(src_l) == 0:
+        if len(src_l) == 0 and len(self._prefile_paths) == 0:
             raise Exception("No source files specified")
+
+        for vsrc in self._prefile_paths:
+            cmd.append(vsrc)
 
         for vsrc in src_l:
             cmd.append(vsrc)
@@ -71,6 +77,9 @@ class SimXcelium(SimVlogBase):
         logfile = self.build_logfile
         if not os.path.isabs(logfile):
             logfile = os.path.join(self.builddir, logfile)
+
+        if not os.path.isdir(self.builddir):
+            os.makedirs(self.builddir)
 
         with open(logfile, "w") as log:
             log.write("** Compile: %s\n" % str(cmd))
@@ -96,13 +105,13 @@ class SimXcelium(SimVlogBase):
         for top in self.top:
             cmd.append(top)
 
-        cmd.extend(['-snapshot', 'top', '-timescale', '1ns/1ps'])
+        cmd.extend(['-snapshot', 'top:snap', '-timescale', '1ns/1ps'])
 #        if self.debug:
 #            cmd.extend(['-debug', 'all'])
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
-            log.write("** Elab\n")
+            log.write("** Elab %s\n" % str(cmd))
             log.flush()
             res = subprocess.run(
                 cmd, 
@@ -113,39 +122,47 @@ class SimXcelium(SimVlogBase):
             if res.returncode != 0:
                 raise Exception("Compilation failed")
 
-    def run(self, args : HdlSim.RunArgs):
+    async def run(self, args : HdlSim.RunArgs):
         cmd = [ 'xmsim' ]
 #        cmd.extend(['--onerror', 'quit'])
 #        cmd.extend(['-t', 'run.tcl'])
+
+        if not os.path.isdir(args.rundir):
+            os.makedirs(args.rundir)
+
+        if not os.path.exists(os.path.join(args.rundir, "xcelium.d")):
+            os.symlink(
+                os.path.join(self.builddir, "xcelium.d"),
+                os.path.join(args.rundir, "xcelium.d"))
         
         for dpi in args.dpi_libs:
             cmd.extend(["-sv_lib", dpi])
 
-        with open("run.tcl", "w") as fp:
-            if args.debug:
-                fp.write("if {[catch {open_vcd sim.vcd} errmsg]} {\n")
-                fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
-                spec = ""
-                for t in self.top:
-                    spec += " /%s/*" % t
-                fp.write("if {[catch {log_vcd %s} errmsg]} {\n" % spec)
-                fp.write("  puts \"Failed to add traces: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
+        # with open(os.path.join(args.rundir, "run.tcl"), "w") as fp:
+        #     if args.debug:
+        #         fp.write("if {[catch {open_vcd sim.vcd} errmsg]} {\n")
+        #         fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
+        #         fp.write("  exit 1\n")
+        #         fp.write("}\n")
+        #         spec = ""
+        #         for t in self.top:
+        #             spec += " /%s/*" % t
+        #         fp.write("if {[catch {log_vcd %s} errmsg]} {\n" % spec)
+        #         fp.write("  puts \"Failed to add traces: $errmsg\"\n")
+        #         fp.write("  exit 1\n")
+        #         fp.write("}\n")
 
-            fp.write("run -all\n")
+        #     fp.write("run -all\n")
 
-            if args.debug:
-                fp.write("if {[catch {flush_vcd} errmsg]} {\n")
-                fp.write("  puts \"Failed to flush VCD: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
+        #     if args.debug:
+        #         fp.write("if {[catch {flush_vcd} errmsg]} {\n")
+        #         fp.write("  puts \"Failed to flush VCD: $errmsg\"\n")
+        #         fp.write("  exit 1\n")
+        #         fp.write("}\n")
 
-            fp.write("exit\n")
+        #     fp.write("exit\n")
 
-        cmd.append('top')
+        cmd.append('top:snap')
 
         for pa in args.plusargs:
             cmd.append('+%s' % pa)

@@ -166,7 +166,7 @@ class HdlSim(object):
 
     def hasFlag(self, flag):
         ret = False
-        for flags,files in self._files:
+        for flags,files in self._filesets:
             if flags is not None and flag in flags.keys():
                 ret = True
                 break

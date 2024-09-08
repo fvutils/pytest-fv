@@ -33,7 +33,7 @@ jobs:
         IVPM_PYTHON: python3
         BUILD_NUM: ${{ github.run_id }}
       run: |
-        echo "BUILD_NUM=${BUILD_NUM}" >> python/pytest_fv/__build_num__.py
+        echo "BUILD_NUM=${BUILD_NUM}" >> src/pytest_fv/__build_num__.py
         ${IVPM_PYTHON} -m pip install ivpm 
         ${IVPM_PYTHON} -m ivpm update -a
     - name: Build packages
