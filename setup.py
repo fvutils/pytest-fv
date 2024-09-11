@@ -29,11 +29,11 @@ setup(
   license = "Apache 2.0",
   keywords = ["SystemVerilog", "Verilog", "RTL", "Coverage"],
   url = "https://github.com/fvutils/pytest-fv",
-  # entry_points={
-  #   'console_scripts': [
-  #     'ivpm = ivpm.__main__:main'
-  #   ]
-  # },
+  entry_points = {
+      'pytest11': [
+          'pytest_fv = pytest_fv.__ext__'
+      ]
+  },
   setup_requires=[
     'setuptools_scm',
   ],

@@ -35,7 +35,7 @@ class TaskCmd(Task):
                  env : List[EnvAction] = None):
         super().__init__(name)
         self.cmd = cmd
-        self.cwd = None
+        self.cwd = cwd
         self.env = env
         pass
 

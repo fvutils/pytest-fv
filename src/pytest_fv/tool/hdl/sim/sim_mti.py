@@ -145,17 +145,18 @@ class SimMti(SimVlogBase):
 #            fp.write("puts $env(LD_LIBRARY_PATH)\n")
 #            fp.write("puts $env(PYTHONPATH)\n")
             if args.debug:
-                fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
-                fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
-                spec = ""
-                for t in self.top:
-                    spec += " /%s/*" % t
-                fp.write("if {[catch {vcd add -r%s} errmsg]} {\n" % spec)
-                fp.write("  puts \"Failed to add traces: $errmsg\"\n")
-                fp.write("  exit 1\n")
-                fp.write("}\n")
+                # fp.write("if {[catch {vcd file sim.vcd} errmsg]} {\n")
+                # fp.write("  puts \"Failed to open VCD file: $errmsg\"\n")
+                # fp.write("  exit 1\n")
+                # fp.write("}\n")
+                # spec = ""
+                # for t in self.top:
+                #     spec += " /%s/*" % t
+                # fp.write("if {[catch {vcd add -r%s} errmsg]} {\n" % spec)
+                # fp.write("  puts \"Failed to add traces: $errmsg\"\n")
+                # fp.write("  exit 1\n")
+                # fp.write("}\n")
+                pass
 
             fp.write("run -all\n")
 

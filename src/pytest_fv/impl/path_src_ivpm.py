@@ -35,7 +35,7 @@ class PathSrcIvpm(PathSrc):
 
         # Find the project
         project = find_project_root(test_srcdir)
-        print("project: %s" % project)
+#        print("project: %s" % project)
         self.pkg_info = load_project_package_info(project)
 
         self.pkg_info_rgy = PkgInfoRgy.inst()
@@ -45,14 +45,13 @@ class PathSrcIvpm(PathSrc):
 
         for i,pkg in enumerate(self.pkg_info):
             section = "project" if i == 0 else "export"
-            print("Section: %s %s %s" % (section, pkg.name, str(pkg.paths.keys())))
+#            print("Section: %s %s %s" % (section, pkg.name, str(pkg.paths.keys())))
             if section in pkg.paths.keys():
-                print("  Kind: %s %s" % (kind, str(pkg.paths[section].keys())))
+#                print("  Kind: %s %s" % (kind, str(pkg.paths[section].keys())))
                 if kind in pkg.paths[section].keys():
-                    print("  Paths: %s" % str(pkg.paths[section][kind]))
+#                    print("  Paths: %s" % str(pkg.paths[section][kind]))
                     ret.extend(pkg.paths[section][kind])
         ret.extend(self.pkg_info_rgy.getPaths(kind))
 
-        print("ret: %s" % str(ret))
         return ret
 
