@@ -72,15 +72,17 @@ class HdlSim(object):
             self._incdirs.append(dir)
 
     def __init__(self, builddir, fs_cfg : FSConfig):
+        from .fv_config import FvConfig
 #        self._files = []
 #        self._incdirs = []
 #        self._defines = {}
         
         self.fs_cfg = fs_cfg
+        cfg = FvConfig.inst(None)
 
         # Common
         self.env = None
-        self.debug = False
+        self.debug = cfg.hdlsim_debug
 
         # Build
         self.builddir = builddir
@@ -188,15 +190,15 @@ class HdlSim(object):
         return TaskDelegator("sim run", self.run(args))
     
     @staticmethod
-    def create(builddir, cfg=None):
+    def create(dirconfig, cfg=None):
         cls = None
         if cfg is None:
-            cfg = FvConfig.inst()
+            cfg = FvConfig.inst(dirconfig.request)
             cls = ToolRgy.inst().get(ToolKind.Sim, cfg.getHdlSim())
         elif type(cfg) == str:
             cls = ToolRgy.inst().get(ToolKind.Sim, cfg)
         else:
             raise Exception("Unknown config type %s" % str(cfg))
-        return cls(builddir)
+        return cls(dirconfig.builddir())
     
 

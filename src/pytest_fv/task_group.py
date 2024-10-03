@@ -28,8 +28,15 @@ class TaskGroup(Task):
         self._tasks = []
 
     async def run(self):
+        from .console import Console
         for task in self._tasks:
+            Console.inst().println("*********************************************************************")
+            Console.inst().println("* Begin Task: %s" % task.name)
+            Console.inst().println("*********************************************************************")
             await task.run()
+            Console.inst().println("*********************************************************************")
+            Console.inst().println("* End Task: %s" % task.name) 
+            Console.inst().println("*********************************************************************")
 
     def addTask(self, task):
         self._tasks.append(task)

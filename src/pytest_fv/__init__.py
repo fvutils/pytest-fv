@@ -1,5 +1,6 @@
 
 #from .test_case import 
+from .console import Console
 from .dirconfig import *
 from .fv_config import *
 from .tool_rgy import ToolRgy

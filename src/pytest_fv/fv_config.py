@@ -28,9 +28,10 @@ class FvConfig(object):
 
     _inst = None
 
-    def __init__(self, pytestconfig):
+    def __init__(self, request : pytest.FixtureRequest, pytestconfig):
 
         self._have_ini = False
+        self.request = request
         if pytestconfig is not None and pytestconfig.inipath is not None:
             self.ini = configparser.ConfigParser()
             self.ini.read(pytestconfig.inipath)
@@ -45,6 +46,10 @@ class FvConfig(object):
     @property
     def rootdir(self):
         return self._rootdir
+    
+    @property
+    def hdlsim_debug(self):
+        return self.request.config.getoption("hdlsim-debug", default=False)
 
     def _pytest_hdl(self):
         if "pytest.fv" not in self.ini.keys():
@@ -54,19 +59,21 @@ class FvConfig(object):
     def getHdlSim(self):
         pytest_hdl = self._pytest_hdl()
 
-        if "PYTEST_FV_HDLSIM" in os.environ.keys() and os.environ["PYTEST_FV_HDLSIM"] != "":
+        if self.request.config.getoption("hdlsim", default=None) is not None:
+            return self.request.config.getoption("hdlsim")
+        elif "PYTEST_FV_HDLSIM" in os.environ.keys() and os.environ["PYTEST_FV_HDLSIM"] != "":
             return os.environ["PYTEST_FV_HDLSIM"]
         elif "hdlsim" in pytest_hdl.keys():
             return pytest_hdl["hdlsim"]
         else:
-            return FvConfig.DEFAULT_TOOL_HDLSIM
+            return self.request.config.getini("hdlsim")
     
     @classmethod
-    def inst(cls, pytestconfig=None):
+    def inst(cls, request, pytestconfig=None):
         if cls._inst is None:
-            cls._inst = FvConfig(pytestconfig)
+            cls._inst = FvConfig(request, pytestconfig)
         elif pytestconfig is not None and not cls._inst._have_ini:
-            cls._inst = FvConfig(pytestconfig)
+            cls._inst = FvConfig(request, pytestconfig)
         return cls._inst
         
 

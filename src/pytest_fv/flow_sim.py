@@ -30,7 +30,7 @@ class FlowSim(Flow):
         self.addSubPhase(PhasePrePost("generate"))
         self.addSubPhase(PhasePrePost("build"))
         self.addSubPhase(PhasePrePost("run"))
-        self.sim : HdlSim = HdlSim.create(dirconfig.builddir(), sim_id)
+        self.sim : HdlSim = HdlSim.create(dirconfig, sim_id)
         self.addTool(self.sim, "sim")
         self.addTaskToPhase("build.main", self.sim.mkBuildTask())
 

@@ -25,6 +25,7 @@ from .fs import FS
 from .fs_config import FSConfig
 
 class FSVlnv(FS):
+    """Fileset specified in terms of a FuseSoc VLNV"""
 
     def __init__(self, 
                 vlnv : str, 

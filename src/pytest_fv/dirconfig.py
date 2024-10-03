@@ -7,7 +7,7 @@ class DirConfig(object):
                  request : pytest.FixtureRequest,
                  pytestconfig : pytest.Config):
         from .fv_config import FvConfig
-        self._cfg = FvConfig.inst(pytestconfig)
+        self._cfg = FvConfig.inst(request, pytestconfig)
         self.request = request
         self._rundir = os.path.join(self._cfg.rootdir, "rundir")
 

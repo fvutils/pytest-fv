@@ -20,8 +20,9 @@
 #*
 #****************************************************************************
 import os
+import multiprocessing
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
+from pytest_fv import Console, HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimVerilator(SimVlogBase):
@@ -35,7 +36,9 @@ class SimVerilator(SimVlogBase):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
 
         cmd = [
-            'verilator', '--binary', '-sv', '-o', 'simv'
+            'verilator', '--binary', '-sv', 
+            '-j', str(multiprocessing.cpu_count()),
+            '-o', 'simv'
         ]
 
         if self.debug:
@@ -89,14 +92,13 @@ class SimVerilator(SimVlogBase):
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
-            log.write("** Compile\n")
-            log.write("** Command: %s\n" % str(cmd))
+            Console.inst().write(log, "** Compile\n")
+            Console.inst().write(log, "** Command: %s\n" % str(cmd))
             log.flush()
-            res = subprocess.run(
-                cmd, 
-                cwd=self.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+            res = Console.inst().run(
+                log, 
+                cmd,
+                cwd=self.builddir)
             
             if res.returncode != 0:
                 raise Exception("Compilation failed")
@@ -121,20 +123,18 @@ class SimVerilator(SimVlogBase):
             cmd.append("+%s" % arg)
 
         with open(logfile, "w") as log:
-            log.write("** Command: %s\n" % str(cmd))
-            log.write("** CWD: %s\n" % run_args.rundir)
+            Console.inst().write(log, "** Command: %s\n" % str(cmd))
+            Console.inst().write(log, "** CWD: %s\n" % run_args.rundir)
             log.flush()
-            res = subprocess.run(
+            res = Console.inst().run(
+                log,
                 cmd,
                 cwd=run_args.rundir,
-                env=run_args.env,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                env=run_args.env)
             
             if res.returncode != 0:
                 raise Exception("Run failed")
 
         pass
-
 
 ToolRgy.register(ToolKind.Sim, "vlt", SimVerilator)
