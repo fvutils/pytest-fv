@@ -22,6 +22,7 @@
 import os
 import subprocess
 from typing import Dict, List
+from .console import Console
 from .env import Env
 from .env_action import EnvAction
 from .task import Task
@@ -49,11 +50,13 @@ class TaskCmd(Task):
         if self.cwd is not None and not os.path.isdir(self.cwd):
             os.makedirs(self.cwd)
 
-        res = subprocess.run(
+        Console.inst().write(None, "** Task: %s" % self.name)
+        Console.inst().write(None, "** Command: %s" % str(self.cmd))
+        res = Console.inst().run(
+            None,
             self.cmd,
             env=env.env,
             cwd=self.cwd,
-            stderr=subprocess.STDOUT
         )
 
         if res.returncode != 0:

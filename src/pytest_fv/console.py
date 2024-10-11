@@ -22,6 +22,7 @@
 import asyncio
 import subprocess
 import sys
+import ivpm
 
 class Console(object):
 
@@ -35,7 +36,8 @@ class Console(object):
         sys.stdout.write("\n")
 
     def write(self, log_fp, line):
-        log_fp.write(line)
+        if log_fp is not None:
+            log_fp.write(line)
         sys.stdout.write(line)
 
     def run(self, log_fp, cmd, **kwargs):
@@ -53,7 +55,7 @@ class Console(object):
                 print("process_exited")
                 pass
 
-        proc = subprocess.Popen(
+        proc = ivpm.ivpm_popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
