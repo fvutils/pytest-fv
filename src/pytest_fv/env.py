@@ -53,6 +53,8 @@ class Env(object):
             self._env[var] = val
         else:
             self._env[var] = val + ps + self._env[var]
+        
+        print("prepend: %s %s %s" % (var, val, self._env[var]))
 
     def setenv(self, var, val):
         self._env[var] = val

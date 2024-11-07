@@ -43,6 +43,8 @@ class EnvAction(object):
         else:
             val = self._val
 
+        print("apply", flush=True)
+
         for v in val:
             if self._kind == EnvAction.Type.PathAppend:
                 env.append_path(self._var, v)

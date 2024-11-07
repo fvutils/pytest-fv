@@ -174,7 +174,7 @@ class HdlSim(object):
                 break
         return ret
     
-    def mkRunArgs(self, rundir):
+    def mkRunArgs(self, rundir) -> 'HdlSim.RunArgs':
         return HdlSim.RunArgs(self, rundir)
     
     async def build(self):

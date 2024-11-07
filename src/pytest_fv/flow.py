@@ -36,12 +36,13 @@ class Flow(PhaseCompound):
         self.dirconfig = dirconfig
         self.fs = FuseSoc()
 
-        if pathsrc is None:
+        if pathsrc is None and os.path.isfile(os.path.join(dirconfig.srcdir(), "ivpm.yaml")):
             pathsrc = PathSrcIvpm(dirconfig.test_srcdir())
-        
-        for path in pathsrc.getPaths("lib-dirs"):
-            print("Add-path %s" % path)
-            self.fs.add_library(path)
+
+        if pathsrc is not None:
+            for path in pathsrc.getPaths("lib-dirs"):
+                print("Add-path %s" % path)
+                self.fs.add_library(path)
 
         self._tool_m = {}
         self._ext_m = {}
