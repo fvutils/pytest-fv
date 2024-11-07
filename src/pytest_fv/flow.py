@@ -37,7 +37,7 @@ class Flow(PhaseCompound):
         self.dirconfig = dirconfig
         self.fs = FuseSoc()
 
-        if pathsrc is None and os.path.isfile(os.path.join(dirconfig.srcdir(), "ivpm.yaml")):
+        if pathsrc is None and os.path.isfile(os.path.join(dirconfig.test_srcdir(), "ivpm.yaml")):
             pathsrc = PathSrcIvpm(dirconfig.test_srcdir())
 
         if pathsrc is not None:
