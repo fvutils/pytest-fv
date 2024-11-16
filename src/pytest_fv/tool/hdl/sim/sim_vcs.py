@@ -21,7 +21,7 @@
 #****************************************************************************
 import os
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind, FSConfig
+from pytest_fv import Console, HdlSim, ToolRgy, ToolKind, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimVCS(SimVlogBase):
@@ -34,6 +34,18 @@ class SimVCS(SimVlogBase):
 
     async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
+
+        timestamp = -1
+
+        if os.path.isfile(os.path.join(self.builddir, "simv")):
+            timestamp = os.path.getmtime(os.path.join(self.builddir, "simv"))
+
+        if timestamp != -1 and self._checkUpToDate(timestamp):
+            Console.inst().println("Note: build is up-to-date")
+            return
+        else:
+            Console.inst().println("Not up-to-date: building")
+
 
         logfile = self.build_logfile
         if not os.path.isabs(logfile):
@@ -51,13 +63,12 @@ class SimVCS(SimVlogBase):
             cmd.append("-timescale=1ns/1ps")
 
             with open(logfile, "a") as log:
-                log.write("** Compile UVM: %s\n" % str(cmd))
-                log.flush()
-                res = subprocess.run(
+                Console.inst().write("** Compile UVM: %s\n" % str(cmd))
+                Console.inst().flush()
+                res = Console.inst().run(
+                    log,
                     cmd, 
-                    cwd=self.builddir,
-                    stderr=subprocess.STDOUT,
-                    stdout=log)
+                    cwd=self.builddir)
 
                 log.write("return-code: %d\n" % res.returncode)
 
@@ -96,13 +107,12 @@ class SimVCS(SimVlogBase):
             cmd.append(vsrc)
 
         with open(logfile, "a") as log:
-            log.write("** Compile: %s\n" % str(cmd))
-            log.flush()
-            res = subprocess.run(
+            Console.inst().write("** Compile: %s\n" % str(cmd))
+            Console.inst().flush()
+            res = Console.inst().run(
+                log,
                 cmd, 
-                cwd=self.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                cwd=self.builddir)
             
             if res.returncode != 0:
                 raise Exception("Compilation failed")
@@ -129,13 +139,12 @@ class SimVCS(SimVlogBase):
             cmd.append('-debug_access')
 
         with open(logfile, "a") as log:
-            log.write("** Elab: %s\n" % str(cmd))
-            log.flush()
-            res = subprocess.run(
+            Console.inst().write("** Elab: %s\n" % str(cmd))
+            Console.inst().flush()
+            res = Console.inst().run(
+                log,
                 cmd, 
-                cwd=self.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                cwd=self.builddir)
 
             if res.returncode != 0:
                 raise Exception("Compilation failed")
@@ -182,14 +191,13 @@ class SimVCS(SimVlogBase):
             os.makedirs(os.path.dirname(logfile))
 
         with open(logfile, "w") as log:
-            log.write("** Command: %s\n" % str(cmd))
-            log.flush()
-            res = subprocess.run(
+            Console.inst().write("** Command: %s\n" % str(cmd))
+            Console.inst().flush()
+            res = Console.inst().run(
+                log,
                 cmd,
                 cwd=args.rundir,
-                env=self.env,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                env=self.env)
             
             if res.returncode != 0:
                 raise Exception("Run failed")

@@ -68,7 +68,10 @@ class Console(object):
             if len(c) == 0:
                 break
             else:
-                line += c.decode()
+                try:
+                    line += c.decode()
+                except UnicodeDecodeError as e:
+                    pass
             while True:
                 next = line.find("\n")
                 if next != -1:

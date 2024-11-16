@@ -39,7 +39,8 @@ setup(
   ],
   install_requires=[
       'fusesoc',
-      'pytest'
+      'pytest',
+      'svdep'
   ]
 )
 

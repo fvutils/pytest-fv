@@ -18,6 +18,8 @@ package:
     - name: simplesat
       version: 0.8.2
       src: pypi
+    - name: svdep
+      url: https://github.com/fvutils/svdep.git
 
   - name: default-dev
     deps:
@@ -30,5 +32,7 @@ package:
       src: pypi
     - name: cocotb
       url: https://github.com/cocotb/cocotb.git
+    - name: svdep
+      url: https://github.com/fvutils/svdep.git
 
 

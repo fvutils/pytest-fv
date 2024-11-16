@@ -19,9 +19,11 @@
 #*     Author: 
 #*
 #****************************************************************************
+import json
 import os
 from pytest_fv import HdlSim
 from pytest_fv.fs_config import FSConfig
+import svdep
 
 class SimVlogBase(HdlSim):
 
@@ -53,3 +55,21 @@ class SimVlogBase(HdlSim):
             def_m.update(defs)
 
         return (src_l, cpp_l, inc_s, def_m)
+    
+    def _checkUpToDate(self, timestamp) -> bool:
+        ret = False
+        src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
+        if os.path.isfile(os.path.join(self.builddir, "svdep.json")):
+            try:
+                with open(os.path.join(self.builddir, "svdep.json"), "r") as fp:
+                    svdep_json = json.load(fp)
+                info = svdep.FileCollection.from_dict(svdep_json)
+                ret = svdep.TaskCheckUpToDate(src_l, list(inc_s)).check(info, timestamp)
+            except Exception as e:
+                print("Failure while computing up-to-date: %s" % str(e))
+        
+        if not ret:
+            info = svdep.TaskBuildFileCollection(src_l, list(inc_s)).build()
+            with open(os.path.join(self.builddir, "svdep.json"), "w") as fp:
+                json.dump(info.to_dict(), fp)
+        return ret

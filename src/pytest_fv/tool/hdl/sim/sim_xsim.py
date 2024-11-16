@@ -22,7 +22,7 @@
 import os
 import shutil
 import subprocess
-from pytest_fv import HdlSim, ToolRgy, ToolKind, Env, FSConfig
+from pytest_fv import Console, HdlSim, ToolRgy, ToolKind, Env, FSConfig
 from .sim_vlog_base import SimVlogBase
 
 class SimXsim(SimVlogBase):
@@ -67,13 +67,12 @@ class SimXsim(SimVlogBase):
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "w") as log:
-            log.write("** Compile\n")
+            Console.inst().write(log, "** Compile\n")
             log.flush()
-            res = subprocess.run(
+            res = Console.inst().run(
+                log,
                 cmd, 
-                cwd=self.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                cwd=self.builddir)
             
             if res.returncode != 0:
                 raise Exception("Compilation failed")
@@ -107,13 +106,11 @@ class SimXsim(SimVlogBase):
 
         print("cmd: %s" % str(cmd))
         with open(logfile, "a") as log:
-            log.write("** Elab\n")
-            log.flush()
-            res = subprocess.run(
+            Console.inst().write(log, "** Elab\n")
+            res = Console.inst().run(
+                log,
                 cmd, 
-                cwd=self.builddir,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                cwd=self.builddir)
 
             if res.returncode != 0:
                 raise Exception("Compilation failed")
@@ -181,12 +178,11 @@ class SimXsim(SimVlogBase):
             logfile = os.path.join(args.rundir, logfile)
 
         with open(logfile, "w") as log:
-            res = subprocess.run(
+            res = Console.inst().run(
+                log,
                 cmd,
                 cwd=args.rundir,
-                env=env.env,
-                stderr=subprocess.STDOUT,
-                stdout=log)
+                env=env.env)
             
             if res.returncode != 0:
                 raise Exception("Run failed")

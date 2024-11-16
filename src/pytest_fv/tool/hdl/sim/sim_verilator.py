@@ -34,6 +34,16 @@ class SimVerilator(SimVlogBase):
 
     async def build(self):
         src_l, cpp_l, inc_s, def_m = self._getSrcIncDef()
+        timestamp = -1
+
+        if os.path.isfile(os.path.join(self.builddir, "obj_dir/simv")):
+            timestamp = os.path.getmtime(os.path.join(self.builddir, "obj_dir/simv"))
+
+        if timestamp != -1 and self._checkUpToDate(timestamp):
+            Console.inst().println("Note: build is up-to-date")
+            return
+        else:
+            Console.inst().println("Not up-to-date: building")
 
         cmd = [
             'verilator', '--binary', '-sv', 
@@ -107,7 +117,10 @@ class SimVerilator(SimVlogBase):
             print("TODO: need to compile DPI")
 
     async def run(self, run_args : HdlSim.RunArgs):
-        cmd = [ os.path.join(self.builddir, "obj_dir", "simv") ]
+        cmd = []
+#        cmd.extend(["valgrind", "--tool=memcheck"])
+
+        cmd.extend([ os.path.join(self.builddir, "obj_dir", "simv") ])
 
         logfile = run_args.run_logfile
         if not os.path.isabs(logfile):
