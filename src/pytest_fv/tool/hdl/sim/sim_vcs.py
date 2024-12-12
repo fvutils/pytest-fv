@@ -63,8 +63,7 @@ class SimVCS(SimVlogBase):
             cmd.append("-timescale=1ns/1ps")
 
             with open(logfile, "a") as log:
-                Console.inst().write("** Compile UVM: %s\n" % str(cmd))
-                Console.inst().flush()
+                Console.inst().write(log, "** Compile UVM: %s\n" % str(cmd))
                 res = Console.inst().run(
                     log,
                     cmd, 
@@ -107,8 +106,7 @@ class SimVCS(SimVlogBase):
             cmd.append(vsrc)
 
         with open(logfile, "a") as log:
-            Console.inst().write("** Compile: %s\n" % str(cmd))
-            Console.inst().flush()
+            Console.inst().write(log, "** Compile: %s\n" % str(cmd))
             res = Console.inst().run(
                 log,
                 cmd, 
@@ -139,8 +137,7 @@ class SimVCS(SimVlogBase):
             cmd.append('-debug_access')
 
         with open(logfile, "a") as log:
-            Console.inst().write("** Elab: %s\n" % str(cmd))
-            Console.inst().flush()
+            Console.inst().write(log, "** Elab: %s\n" % str(cmd))
             res = Console.inst().run(
                 log,
                 cmd, 
