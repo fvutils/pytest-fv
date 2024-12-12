@@ -188,8 +188,7 @@ class SimVCS(SimVlogBase):
             os.makedirs(os.path.dirname(logfile))
 
         with open(logfile, "w") as log:
-            Console.inst().write("** Command: %s\n" % str(cmd))
-            Console.inst().flush()
+            Console.inst().write(log, "** Command: %s\n" % str(cmd))
             res = Console.inst().run(
                 log,
                 cmd,
