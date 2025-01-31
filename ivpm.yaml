@@ -20,6 +20,7 @@ package:
       src: pypi
     - name: svdep
       url: https://github.com/fvutils/svdep.git
+      dep-set: default
 
   - name: default-dev
     deps:
@@ -34,5 +35,6 @@ package:
       url: https://github.com/cocotb/cocotb.git
     - name: svdep
       url: https://github.com/fvutils/svdep.git
+      dep-set: default
 
 
