@@ -34,9 +34,9 @@ setup(
           'pytest_fv = pytest_fv.__ext__'
       ]
   },
-  setup_requires=[
-    'setuptools_scm',
-  ],
+#  setup_requires=[
+#    'setuptools_scm',
+#  ],
   install_requires=[
       'fusesoc',
       'pytest',
