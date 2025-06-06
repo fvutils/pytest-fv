@@ -23,6 +23,7 @@ import asyncio
 import subprocess
 import sys
 import ivpm
+from ivpm import ivpm_subprocess
 
 class Console(object):
 
@@ -55,7 +56,7 @@ class Console(object):
                 print("process_exited")
                 pass
 
-        proc = ivpm.ivpm_popen(
+        proc = ivpm_subprocess.ivpm_popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
